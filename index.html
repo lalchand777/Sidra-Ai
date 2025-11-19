@@ -1,0 +1,468 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  MessageSquare, 
+  Plus, 
+  MoreVertical, 
+  Menu, 
+  Send, 
+  Bot, 
+  User, 
+  Trash2, 
+  X, 
+  Settings, 
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
+
+// --- CONSTANTS & CONFIG ---
+// User: Replace this string with your actual key if you want to hardcode it.
+// Otherwise, use the Settings button in the UI to set it temporarily.
+const DEFAULT_API_KEY = ""; 
+const MODEL_NAME = "deepseek-chat"; // Or "deepseek-coder" based on your access
+
+export default function App() {
+  // --- STATE MANAGEMENT ---
+  const [apiKey, setApiKey] = useState(DEFAULT_API_KEY);
+  const [showSettings, setShowSettings] = useState(false);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Data Structures
+  const [chats, setChats] = useState([
+    { id: 1, title: "Welcome to Sidra", date: new Date().toLocaleDateString() }
+  ]);
+  const [currentChatId, setCurrentChatId] = useState(1);
+  const [messages, setMessages] = useState({
+    1: [
+      { 
+        role: 'assistant', 
+        content: "Namaste! Main Sidra hoon. Main aapki kaise madad kar sakti hoon aaj?" 
+      }
+    ]
+  });
+
+  const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  // --- EFFECTS ---
+  
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, currentChatId, isLoading]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [input]);
+
+  // Close mobile menu on resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // --- HANDLERS ---
+
+  const handleNewChat = () => {
+    const newId = Date.now();
+    const newChat = { id: newId, title: "New Chat", date: new Date().toLocaleDateString() };
+    setChats([newChat, ...chats]);
+    setMessages(prev => ({ ...prev, [newId]: [] }));
+    setCurrentChatId(newId);
+    setMobileMenuOpen(false);
+    // Focus input on new chat
+    setTimeout(() => textareaRef.current?.focus(), 100);
+  };
+
+  const handleDeleteChat = (e, id) => {
+    e.stopPropagation();
+    const newChats = chats.filter(c => c.id !== id);
+    setChats(newChats);
+    
+    const newMessages = { ...messages };
+    delete newMessages[id];
+    setMessages(newMessages);
+
+    if (currentChatId === id && newChats.length > 0) {
+      setCurrentChatId(newChats[0].id);
+    } else if (newChats.length === 0) {
+      handleNewChat();
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!input.trim()) return;
+    
+    const userMessage = { role: 'user', content: input };
+    const chatId = currentChatId;
+    
+    // Update UI immediately
+    setMessages(prev => ({
+      ...prev,
+      [chatId]: [...(prev[chatId] || []), userMessage]
+    }));
+    setInput("");
+    setIsLoading(true);
+
+    // Adjust textarea height back
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+
+    // Rename chat if it's the first message
+    const currentChatMessages = messages[chatId] || [];
+    if (currentChatMessages.length === 0) {
+      const updatedChats = chats.map(c => 
+        c.id === chatId ? { ...c, title: input.slice(0, 30) + (input.length > 30 ? "..." : "") } : c
+      );
+      setChats(updatedChats);
+    }
+
+    try {
+      // Prepare context for API
+      const history = (messages[chatId] || []).concat(userMessage).map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+
+      // --- DEEPSEEK API CALL ---
+      // NOTE: This requires a valid API Key to work properly
+      
+      let assistantMessage;
+      const DEEPSEEK_API_KEY = apiKey; // Using state or constant
+
+      if (!DEEPSEEK_API_KEY) {
+        // Mock response if no key provided
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        assistantMessage = { 
+          role: 'assistant', 
+          content: "Please enter your DeepSeek API Key in the settings (gear icon) to connect to the real AI. For now, I am in demo mode." 
+        };
+      } else {
+        const response = await fetch('https://api.deepseek.com/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: MODEL_NAME,
+                messages: [
+                    { role: "system", content: "You are Sidra, a helpful, witty, and intelligent AI assistant." },
+                    ...history
+                ],
+                stream: false
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error.message);
+        }
+
+        assistantMessage = data.choices[0].message;
+      }
+
+      setMessages(prev => ({
+        ...prev,
+        [chatId]: [...(prev[chatId] || []), userMessage, assistantMessage]
+      }));
+
+    } catch (error) {
+      setMessages(prev => ({
+        ...prev,
+        [chatId]: [...(prev[chatId] || []), userMessage, { role: 'assistant', content: `Error: ${error.message}. Please check your API key.` }]
+      }));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // --- RENDER HELPERS ---
+  
+  // Simple Markdown-ish parser for code blocks
+  const renderContent = (text) => {
+    const parts = text.split(/(```[\s\S]*?```)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('```') && part.endsWith('```')) {
+        const content = part.slice(3, -3).replace(/^[a-z]+\n/, ''); // remove lang
+        return (
+          <div key={index} className="my-4 rounded-md overflow-hidden bg-[#1e1e1e] text-gray-200 text-sm font-mono border border-gray-700">
+            <div className="bg-[#2d2d2d] px-4 py-2 text-xs text-gray-400 flex justify-between items-center">
+              <span>Code Block</span>
+              <button 
+                onClick={() => navigator.clipboard.writeText(content)}
+                className="hover:text-white"
+              >
+                Copy
+              </button>
+            </div>
+            <pre className="p-4 overflow-x-auto whitespace-pre-wrap">
+              <code>{content}</code>
+            </pre>
+          </div>
+        );
+      }
+      // Split by bold text logic could go here, keeping it simple for now
+      return <span key={index} className="whitespace-pre-wrap leading-relaxed">{part}</span>;
+    });
+  };
+
+  return (
+    <div className="flex h-screen bg-[#212121] text-gray-100 font-sans overflow-hidden">
+      
+      {/* --- SIDEBAR (Desktop) --- */}
+      <div className={`${sidebarOpen ? 'w-[260px]' : 'w-0'} bg-[#171717] hidden md:flex flex-col transition-all duration-300 border-r border-[#333] relative`}>
+        <div className="p-3">
+          <button 
+            onClick={handleNewChat}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-[#212121] hover:bg-[#2f2f2f] rounded-lg transition-colors text-sm text-gray-200 border border-[#333] group"
+          >
+            <Plus size={18} className="text-gray-400 group-hover:text-white" />
+            <span className="font-medium">New chat</span>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-2">
+          <div className="text-xs font-semibold text-gray-500 mb-2 px-2">Recent</div>
+          {chats.map(chat => (
+            <div 
+              key={chat.id}
+              onClick={() => setCurrentChatId(chat.id)}
+              className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer text-sm mb-1 transition-colors ${currentChatId === chat.id ? 'bg-[#212121] text-white' : 'text-gray-400 hover:bg-[#212121] hover:text-white'}`}
+            >
+              <MessageSquare size={16} />
+              <span className="truncate w-32">{chat.title}</span>
+              
+              {/* Delete Option (Visible on hover or active) */}
+              <button 
+                onClick={(e) => handleDeleteChat(e, chat.id)}
+                className={`absolute right-2 p-1 rounded hover:bg-[#333] ${currentChatId === chat.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
+              >
+                <Trash2 size={14} className="text-gray-500 hover:text-red-400" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-4 border-t border-[#333]">
+          <button onClick={() => setShowSettings(true)} className="flex items-center gap-3 text-sm text-gray-300 hover:text-white transition-colors w-full px-2 py-2 rounded-md hover:bg-[#2f2f2f]">
+            <Settings size={18} />
+            <span>Settings</span>
+          </button>
+          <div className="flex items-center gap-3 text-sm text-gray-300 mt-2 px-2 py-2">
+            <div className="w-8 h-8 rounded bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs">
+              U
+            </div>
+            <div className="flex-1">
+              <div className="font-medium">User</div>
+              <div className="text-xs text-gray-500">Free Plan</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* --- SIDEBAR OVERLAY (Mobile) --- */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}></div>
+          <div className="absolute left-0 top-0 bottom-0 w-[280px] bg-[#171717] z-50 flex flex-col shadow-2xl">
+             <div className="p-4 flex justify-between items-center border-b border-[#333]">
+                <span className="font-semibold text-lg text-gray-200">Sidra</span>
+                <button onClick={() => setMobileMenuOpen(false)} className="p-2 hover:bg-[#333] rounded-md"><X size={20} /></button>
+             </div>
+             <div className="p-3">
+                <button onClick={handleNewChat} className="w-full flex items-center gap-3 px-4 py-3 bg-[#212121] rounded-lg text-sm border border-[#333]">
+                  <Plus size={18} /> <span>New chat</span>
+                </button>
+             </div>
+             <div className="flex-1 overflow-y-auto px-3">
+                {chats.map(chat => (
+                  <div key={chat.id} onClick={() => { setCurrentChatId(chat.id); setMobileMenuOpen(false); }} className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm mb-1 ${currentChatId === chat.id ? 'bg-[#212121] text-white' : 'text-gray-400'}`}>
+                    <MessageSquare size={16} />
+                    <span className="truncate">{chat.title}</span>
+                  </div>
+                ))}
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MAIN CHAT AREA --- */}
+      <div className="flex-1 flex flex-col relative bg-[#212121]">
+        
+        {/* Header */}
+        <header className="h-14 flex items-center justify-between px-4 bg-[#212121] md:bg-transparent z-10">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileMenuOpen(true)} className="md:hidden p-2 text-gray-400 hover:text-white hover:bg-[#333] rounded-md">
+              <Menu size={20} />
+            </button>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden md:block p-2 text-gray-400 hover:text-white hover:bg-[#333] rounded-md">
+               {sidebarOpen ? <Menu size={20} /> : <ChevronRight size={20} />}
+            </button>
+            <div className="flex items-center gap-2 cursor-pointer hover:bg-[#2f2f2f] px-3 py-1 rounded-lg transition-colors">
+              <span className="text-lg font-medium text-gray-200 opacity-90">Sidra <span className="text-purple-400 text-sm">1.0</span></span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="p-2 text-gray-400 hover:text-white hover:bg-[#333] rounded-md">
+              <MoreVertical size={20} />
+            </button>
+          </div>
+        </header>
+
+        {/* Messages List */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="max-w-3xl mx-auto px-4 py-6">
+            
+            {/* Empty State / Welcome */}
+            {(!messages[currentChatId] || messages[currentChatId].length === 0) && (
+              <div className="h-full flex flex-col items-center justify-center mt-20 opacity-100 transition-opacity">
+                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-6">
+                  <Sparkles size={32} className="text-purple-400" />
+                </div>
+                <h2 className="text-2xl font-semibold mb-2">Hello, I'm Sidra</h2>
+                <p className="text-gray-400 mb-8">How can I help you today?</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
+                   {["Explain quantum computing", "Write a python script", "Creative writing ideas", "Travel itinerary for Japan"].map((suggestion, i) => (
+                     <button key={i} onClick={() => { setInput(suggestion); textareaRef.current?.focus(); }} className="p-4 border border-[#333] rounded-xl hover:bg-[#2f2f2f] text-left text-sm text-gray-300 transition-colors">
+                       {suggestion}
+                     </button>
+                   ))}
+                </div>
+              </div>
+            )}
+
+            {messages[currentChatId]?.map((msg, idx) => (
+              <div key={idx} className={`flex gap-4 mb-6 ${msg.role === 'assistant' ? '' : 'justify-end'}`}>
+                
+                {msg.role === 'assistant' && (
+                  <div className="w-8 h-8 rounded-full bg-purple-600 flex-shrink-0 flex items-center justify-center mt-1">
+                    <Bot size={18} className="text-white" />
+                  </div>
+                )}
+
+                <div className={`relative max-w-[85%] md:max-w-[75%] rounded-2xl px-5 py-3 text-[15px] ${
+                  msg.role === 'user' 
+                    ? 'bg-[#2f2f2f] text-white rounded-tr-sm' 
+                    : 'text-gray-100'
+                }`}>
+                  {renderContent(msg.content)}
+                </div>
+
+                {msg.role === 'user' && (
+                  <div className="w-8 h-8 rounded-full bg-[#333] flex-shrink-0 flex items-center justify-center mt-1 border border-[#444]">
+                    <User size={16} className="text-gray-300" />
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex gap-4 mb-6">
+                 <div className="w-8 h-8 rounded-full bg-purple-600 flex-shrink-0 flex items-center justify-center mt-1 animate-pulse">
+                    <Bot size={18} className="text-white" />
+                  </div>
+                  <div className="flex items-center gap-1 mt-3">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+                  </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <div className="w-full bg-[#212121] pt-2 pb-6 px-4">
+          <div className="max-w-3xl mx-auto relative">
+            <div className="bg-[#2f2f2f] rounded-3xl border border-[#333] focus-within:border-gray-500 transition-colors shadow-lg">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Message Sidra..."
+                className="w-full bg-transparent text-white placeholder-gray-400 px-4 py-4 max-h-[200px] min-h-[52px] outline-none resize-none overflow-y-auto custom-scrollbar"
+                rows={1}
+              />
+              <button 
+                onClick={handleSendMessage}
+                disabled={!input.trim() || isLoading}
+                className={`absolute right-2 bottom-2 p-2 rounded-full transition-all ${
+                  input.trim() && !isLoading
+                    ? 'bg-white text-black hover:bg-gray-200' 
+                    : 'bg-[#444] text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                <Send size={18} className={isLoading ? 'opacity-0' : ''} />
+              </button>
+            </div>
+            <div className="text-center mt-2 text-xs text-gray-500">
+              Sidra can make mistakes. Consider checking important information.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#212121] border border-[#333] rounded-xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold text-white">Settings</h3>
+              <button onClick={() => setShowSettings(false)} className="text-gray-400 hover:text-white"><X /></button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-2">DeepSeek API Key</label>
+                <input 
+                  type="password" 
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="sk-..."
+                  className="w-full bg-[#171717] border border-[#333] rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Your key is stored locally in state and never shared.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button 
+                onClick={() => setShowSettings(false)}
+                className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
