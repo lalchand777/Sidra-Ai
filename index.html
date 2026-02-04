@@ -2,314 +2,355 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Website Builder - Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Website Builder</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgMain: '#09090b',
+                        bgSidebar: '#18181b',
+                        borderZinc: '#27272a',
+                        textMain: '#e4e4e7',
+                        accent: '#3b82f6'
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Custom scrollbar for a cleaner dark mode look */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #18181b; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
-        
+        /* Custom Scrollbar for Webkit */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
         /* Loader Animation */
-        .loader { border: 3px solid #3f3f46; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        .loader {
+            border: 3px solid #27272a;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Utility for 100dvh */
+        .h-dvh { height: 100dvh; }
     </style>
 </head>
-<body class="bg-[#09090b] text-zinc-300 h-screen w-screen flex overflow-hidden font-sans selection:bg-blue-500 selection:text-white">
+<body class="bg-bgMain text-textMain font-sans overflow-hidden flex flex-col h-dvh">
 
-    <div id="mobileOverlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden glass-effect" onclick="toggleSidebar()"></div>
-
-    <aside id="sidebar" class="bg-[#18181b] border-r border-zinc-800 w-64 flex-shrink-0 flex flex-col transition-transform duration-300 absolute inset-y-0 left-0 z-50 lg:relative lg:translate-x-0 -translate-x-full">
-        <div class="p-4 border-b border-zinc-800 flex items-center justify-between">
-            <h1 class="font-bold text-white tracking-tight">AI Builder <span class="text-blue-500 text-xs uppercase ml-1">Pro</span></h1>
-            <button class="lg:hidden text-zinc-400" onclick="toggleSidebar()">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <header class="h-14 border-b border-borderZinc flex items-center justify-between px-4 bg-bgMain shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <button id="menuBtn" class="md:hidden text-zinc-400 hover:text-white p-2">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="font-bold text-lg tracking-tight"><i class="fa-solid fa-code text-accent mr-2"></i>Builder.ai</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="settingsBtn" class="text-zinc-400 hover:text-white transition p-2">
+                <i class="fa-solid fa-gear"></i>
             </button>
         </div>
+    </header>
 
-        <div class="p-4">
-            <button onclick="createNewProject()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                <span>+</span> New Project
-            </button>
-        </div>
+    <div class="flex flex-1 overflow-hidden relative">
 
-        <div class="flex-grow overflow-y-auto px-2 space-y-1" id="projectList">
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden transition-opacity"></div>
+
+        <aside id="sidebar" class="absolute md:relative inset-y-0 left-0 w-72 bg-bgSidebar border-r border-borderZinc transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col h-full shadow-2xl md:shadow-none">
+            
+            <div class="p-4 border-b border-borderZinc flex justify-between items-center">
+                <span class="text-sm font-semibold text-zinc-400 uppercase tracking-wider">History</span>
+                <button id="closeSidebarBtn" class="md:hidden text-zinc-400 hover:text-white">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
-        <div class="p-4 border-t border-zinc-800 mt-auto">
-            <button onclick="toggleSettings()" class="flex items-center gap-3 text-zinc-400 hover:text-white w-full p-2 rounded hover:bg-zinc-800 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span>Settings</span>
-            </button>
-        </div>
-    </aside>
+            <div id="historyList" class="flex-1 overflow-y-auto p-2 space-y-1">
+                </div>
 
-    <main class="flex-1 flex flex-col min-w-0 bg-[#09090b] relative">
-        
-        <header class="h-14 flex-shrink-0 border-b border-zinc-800 flex items-center justify-between px-4 bg-[#09090b]">
-            <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="lg:hidden text-zinc-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-                <div class="hidden md:flex gap-2">
-                    <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-                    <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                    <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+            <div class="p-4 border-t border-borderZinc text-xs text-zinc-500 text-center">
+                Stored locally in browser
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col bg-bgMain relative w-full">
+            
+            <div class="h-10 border-b border-borderZinc bg-bgMain flex items-center px-4 justify-between shrink-0">
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <div class="text-xs text-zinc-500 font-mono">preview.html</div>
+                <div class="w-8"></div> </div>
+
+            <div class="flex-1 relative bg-white/5 w-full">
+                <iframe id="previewFrame" class="w-full h-full border-none bg-white" sandbox="allow-scripts allow-modals"></iframe>
+                
+                <div id="statusOverlay" class="absolute inset-0 bg-bgMain flex flex-col items-center justify-center z-10">
+                    <div id="statusIcon" class="text-zinc-700 text-6xl mb-4"><i class="fa-brands fa-html5"></i></div>
+                    <p id="statusText" class="text-zinc-500">Enter a prompt to generate a website</p>
+                    <div id="loader" class="hidden mt-4 loader"></div>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
-                <button id="btnPreview" onclick="setView('preview')" class="px-3 py-1 text-xs font-medium rounded bg-zinc-700 text-white transition-all">Preview</button>
-                <button id="btnCode" onclick="setView('code')" class="px-3 py-1 text-xs font-medium rounded text-zinc-400 hover:text-white transition-all">Code</button>
-            </div>
+        </main>
+    </div>
 
-            <button onclick="downloadCode()" class="text-zinc-400 hover:text-blue-400 transition-colors" title="Download HTML">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+    <footer class="bg-bgMain border-t border-borderZinc p-3 md:p-4 shrink-0 z-20">
+        <form id="promptForm" class="relative max-w-4xl mx-auto w-full">
+            <input 
+                type="text" 
+                id="promptInput" 
+                class="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder-zinc-600"
+                placeholder="Describe your website (e.g. 'A coffee shop landing page')..."
+                autocomplete="off"
+            >
+            <button 
+                type="submit" 
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-accent p-2 transition-colors disabled:opacity-50"
+                id="sendBtn"
+            >
+                <i class="fa-solid fa-paper-plane"></i>
             </button>
-        </header>
+        </form>
+    </footer>
 
-        <div class="flex-grow relative overflow-hidden bg-[#121214]">
-            
-            <div id="previewContainer" class="w-full h-full bg-white">
-                <iframe id="previewFrame" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
-            </div>
-
-            <div id="codeContainer" class="w-full h-full hidden absolute inset-0 bg-[#0d0d10]">
-                <textarea id="codeEditor" class="w-full h-full bg-transparent text-green-400 font-mono text-sm p-4 resize-none focus:outline-none" spellcheck="false" readonly></textarea>
-            </div>
-
-            <div id="loader" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20 hidden">
-                <div class="loader mb-4"></div>
-                <p class="text-zinc-400 text-sm animate-pulse">Generating code...</p>
-            </div>
-            
-            <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-600 pointer-events-none">
-                <svg class="w-16 h-16 mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                <p class="text-sm">Describe a website to begin...</p>
-            </div>
-        </div>
-
-        <footer class="flex-shrink-0 bg-[#18181b] border-t border-zinc-800 p-4 z-30">
-            <div class="max-w-4xl mx-auto flex gap-3 items-end">
-                <textarea 
-                    id="promptInput" 
-                    placeholder="Describe your website (e.g. 'A landing page for a coffee shop with a dark theme')..." 
-                    class="flex-grow bg-[#27272a] border border-zinc-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none h-14 max-h-32 placeholder-zinc-500 transition-all"
-                    oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-                <button onclick="generateSite()" class="h-14 w-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center flex-shrink-0 transition-all shadow-lg shadow-blue-900/20 group">
-                    <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                </button>
-            </div>
-        </footer>
-
-    </main>
-
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-[#18181b] border border-zinc-800 w-full max-w-md rounded-2xl p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-white">Settings</h2>
-                <button onclick="toggleSettings()" class="text-zinc-500 hover:text-white">&times;</button>
-            </div>
+    <div id="settingsModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-bgSidebar border border-borderZinc rounded-xl w-full max-w-sm shadow-2xl p-6">
+            <h2 class="text-lg font-bold mb-4">API Settings</h2>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">OpenRouter API Key</label>
-                    <input type="password" id="apiKey" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-white focus:border-blue-500 focus:outline-none" placeholder="sk-or-...">
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">OpenRouter/OpenAI API Key</label>
+                    <input type="password" id="apiKeyInput" class="w-full bg-black border border-zinc-700 rounded px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" placeholder="sk-...">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-500 uppercase mb-1">Model ID</label>
-                    <input type="text" id="modelId" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-sm text-white focus:border-blue-500 focus:outline-none" placeholder="google/gemini-2.0-flash-001" value="google/gemini-2.0-flash-001">
+                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Model ID</label>
+                    <input type="text" id="modelIdInput" class="w-full bg-black border border-zinc-700 rounded px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" value="openai/gpt-3.5-turbo" placeholder="e.g. anthropic/claude-3-haiku">
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end">
-                <button onclick="saveSettings()" class="bg-white text-black font-semibold py-2 px-6 rounded-lg hover:bg-zinc-200 transition-colors">Save</button>
+            <div class="mt-6 flex justify-end gap-3">
+                <button id="cancelSettings" class="px-4 py-2 text-sm text-zinc-400 hover:text-white">Cancel</button>
+                <button id="saveSettings" class="px-4 py-2 bg-accent hover:bg-blue-600 text-white text-sm rounded transition-colors">Save</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION & STATE ---
-        const SYSTEM_PROMPT = "You are an expert Frontend AI. Your task is to output ONLY valid, single-file HTML5 code including internal CSS and JS. Do not output markdown backticks. Do not output explanations. The code must be production-ready, responsive, and beautiful.";
+        // --- CONSTANTS ---
+        const SYSTEM_PROMPT = "You are an expert web developer. Output ONLY raw single-file HTML code. Do not use Markdown. No explanations. Include CSS inside <style> tags and JS inside <script> tags. The code must be complete and ready to run.";
         
-        const state = {
-            apiKey: localStorage.getItem('ab_key') || '',
-            model: localStorage.getItem('ab_model') || 'google/gemini-2.0-flash-001',
-            projects: JSON.parse(localStorage.getItem('ab_projects') || '[]'),
-            currentCode: ''
+        // --- DOM ELEMENTS ---
+        const els = {
+            sidebar: document.getElementById('sidebar'),
+            sidebarBackdrop: document.getElementById('sidebarBackdrop'),
+            menuBtn: document.getElementById('menuBtn'),
+            closeSidebarBtn: document.getElementById('closeSidebarBtn'),
+            settingsBtn: document.getElementById('settingsBtn'),
+            settingsModal: document.getElementById('settingsModal'),
+            cancelSettings: document.getElementById('cancelSettings'),
+            saveSettings: document.getElementById('saveSettings'),
+            apiKeyInput: document.getElementById('apiKeyInput'),
+            modelIdInput: document.getElementById('modelIdInput'),
+            promptForm: document.getElementById('promptForm'),
+            promptInput: document.getElementById('promptInput'),
+            sendBtn: document.getElementById('sendBtn'),
+            previewFrame: document.getElementById('previewFrame'),
+            statusOverlay: document.getElementById('statusOverlay'),
+            statusText: document.getElementById('statusText'),
+            loader: document.getElementById('loader'),
+            historyList: document.getElementById('historyList'),
+            statusIcon: document.getElementById('statusIcon')
         };
 
-        // --- 2. UI INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            renderProjects();
-            document.getElementById('apiKey').value = state.apiKey;
-            document.getElementById('modelId').value = state.model;
-            
-            // Auto-focus prompt if key exists
-            if(state.apiKey) document.getElementById('promptInput').focus();
-            else toggleSettings(); // Force settings if no key
+        // --- STATE ---
+        let state = {
+            apiKey: localStorage.getItem('ai_builder_key') || '',
+            modelId: localStorage.getItem('ai_builder_model') || 'openai/gpt-3.5-turbo',
+            history: JSON.parse(localStorage.getItem('ai_builder_history') || '[]')
+        };
+
+        // --- INITIALIZATION ---
+        function init() {
+            renderHistory();
+            if(!state.apiKey) {
+                // Open settings if no key found on first load
+                setTimeout(() => toggleModal(true), 500);
+            }
+        }
+
+        // --- SIDEBAR LOGIC (Mobile Drawer) ---
+        function toggleSidebar(show) {
+            if (show) {
+                els.sidebar.classList.remove('-translate-x-full');
+                els.sidebarBackdrop.classList.remove('hidden');
+            } else {
+                els.sidebar.classList.add('-translate-x-full');
+                els.sidebarBackdrop.classList.add('hidden');
+            }
+        }
+
+        els.menuBtn.addEventListener('click', () => toggleSidebar(true));
+        els.closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
+        els.sidebarBackdrop.addEventListener('click', () => toggleSidebar(false));
+
+        // --- SETTINGS LOGIC ---
+        function toggleModal(show) {
+            if(show) {
+                els.apiKeyInput.value = state.apiKey;
+                els.modelIdInput.value = state.modelId;
+                els.settingsModal.classList.remove('hidden');
+            } else {
+                els.settingsModal.classList.add('hidden');
+            }
+        }
+
+        els.settingsBtn.addEventListener('click', () => toggleModal(true));
+        els.cancelSettings.addEventListener('click', () => toggleModal(false));
+        
+        els.saveSettings.addEventListener('click', () => {
+            state.apiKey = els.apiKeyInput.value.trim();
+            state.modelId = els.modelIdInput.value.trim();
+            localStorage.setItem('ai_builder_key', state.apiKey);
+            localStorage.setItem('ai_builder_model', state.modelId);
+            toggleModal(false);
+            alert('Settings Saved!');
         });
 
-        // --- 3. CORE FUNCTIONS ---
+        // --- HISTORY LOGIC ---
+        function renderHistory() {
+            els.historyList.innerHTML = '';
+            state.history.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "group p-3 rounded hover:bg-zinc-800 cursor-pointer transition flex justify-between items-center group";
+                div.innerHTML = `
+                    <div class="truncate text-sm text-zinc-300 w-40">${item.prompt}</div>
+                    <button class="text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition" onclick="deleteHistory(event, ${index})">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                div.onclick = (e) => {
+                    if(!e.target.closest('button')) loadFromHistory(index);
+                };
+                els.historyList.appendChild(div);
+            });
+        }
 
-        async function generateSite() {
-            const prompt = document.getElementById('promptInput').value.trim();
-            if (!prompt) return;
-            if (!state.apiKey) { alert('Please enter API Key in Settings'); toggleSettings(); return; }
+        window.deleteHistory = (e, index) => {
+            e.stopPropagation();
+            if(confirm('Delete this project?')) {
+                state.history.splice(index, 1);
+                localStorage.setItem('ai_builder_history', JSON.stringify(state.history));
+                renderHistory();
+            }
+        };
 
-            // UI Updates
-            const loader = document.getElementById('loader');
-            const emptyState = document.getElementById('emptyState');
-            loader.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-            
+        function loadFromHistory(index) {
+            const item = state.history[index];
+            updatePreview(item.code);
+            // On mobile, close sidebar after selection
+            if(window.innerWidth < 768) toggleSidebar(false);
+        }
+
+        // --- CORE GENERATION LOGIC ---
+        els.promptForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const prompt = els.promptInput.value.trim();
+            if(!prompt) return;
+            if(!state.apiKey) {
+                alert('Please set your API Key in settings first.');
+                toggleModal(true);
+                return;
+            }
+
+            // UI Loading State
+            els.promptInput.disabled = true;
+            els.sendBtn.disabled = true;
+            els.statusOverlay.classList.remove('hidden');
+            els.statusIcon.classList.add('hidden');
+            els.statusText.textContent = "Generating code... This may take a moment.";
+            els.loader.classList.remove('hidden');
+
             try {
-                const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${state.apiKey}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        "model": state.model,
-                        "messages": [
-                            {"role": "system", "content": SYSTEM_PROMPT},
-                            {"role": "user", "content": `Build a website described as: ${prompt}.`}
-                        ]
-                    })
-                });
+                const code = await fetchAI(prompt);
+                
+                // Save to history
+                state.history.unshift({ prompt: prompt, code: code, date: new Date().toISOString() });
+                localStorage.setItem('ai_builder_history', JSON.stringify(state.history));
+                renderHistory();
 
-                if (!response.ok) throw new Error('API Error');
-
-                const data = await response.json();
-                let code = data.choices[0].message.content;
-
-                // Clean Code (Remove markdown if AI hallucinates it)
-                code = code.replace(/```html/g, '').replace(/```/g, '');
-
-                updateWorkspace(code);
-                saveProjectToHistory(prompt, code);
+                // Render
+                updatePreview(code);
+                els.promptInput.value = '';
 
             } catch (error) {
-                alert('Generation Failed: ' + error.message);
+                console.error(error);
+                alert('Error generating website: ' + error.message);
+                els.statusText.textContent = "Error occurred.";
+                els.loader.classList.add('hidden');
+                els.statusIcon.classList.remove('hidden');
             } finally {
-                loader.classList.add('hidden');
+                els.promptInput.disabled = false;
+                els.sendBtn.disabled = false;
             }
+        });
+
+        async function fetchAI(userPrompt) {
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${state.apiKey}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.href, // Required by OpenRouter
+                    "X-Title": "AI Website Builder"
+                },
+                body: JSON.stringify({
+                    "model": state.modelId,
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": userPrompt}
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error?.message || 'API request failed');
+            }
+
+            const data = await response.json();
+            let rawContent = data.choices[0].message.content;
+
+            // Clean Markdown code blocks if present (Common LLM behavior)
+            rawContent = rawContent.replace(/```html/g, '').replace(/```/g, '');
+            return rawContent;
         }
 
-        function updateWorkspace(htmlCode) {
-            state.currentCode = htmlCode;
+        function updatePreview(htmlCode) {
+            // Hide overlay
+            els.statusOverlay.classList.add('hidden');
             
-            // Update Iframe
-            const iframe = document.getElementById('previewFrame');
-            iframe.srcdoc = htmlCode;
-
-            // Update Code Editor
-            document.getElementById('codeEditor').value = htmlCode;
+            // Inject into iframe
+            const blob = new Blob([htmlCode], { type: 'text/html' });
+            els.previewFrame.src = URL.createObjectURL(blob);
         }
 
-        function saveProjectToHistory(name, code) {
-            const project = {
-                id: Date.now(),
-                name: name.substring(0, 30) + (name.length > 30 ? '...' : ''),
-                code: code,
-                date: new Date().toLocaleDateString()
-            };
-            state.projects.unshift(project);
-            localStorage.setItem('ab_projects', JSON.stringify(state.projects));
-            renderProjects();
-        }
+        // Run
+        init();
 
-        function loadProject(id) {
-            const project = state.projects.find(p => p.id === id);
-            if (project) {
-                updateWorkspace(project.code);
-                document.getElementById('promptInput').value = "";
-                // On mobile, close sidebar after loading
-                if(window.innerWidth < 1024) toggleSidebar();
-            }
-        }
-
-        function renderProjects() {
-            const list = document.getElementById('projectList');
-            list.innerHTML = state.projects.map(p => `
-                <div onclick="loadProject(${p.id})" class="p-3 rounded-lg hover:bg-zinc-800 cursor-pointer group transition-colors border border-transparent hover:border-zinc-700">
-                    <div class="font-medium text-sm text-zinc-200 group-hover:text-blue-400 truncate">${p.name}</div>
-                    <div class="text-xs text-zinc-500 mt-1">${p.date}</div>
-                </div>
-            `).join('');
-        }
-
-        function createNewProject() {
-            state.currentCode = '';
-            document.getElementById('previewFrame').srcdoc = '';
-            document.getElementById('codeEditor').value = '';
-            document.getElementById('promptInput').value = '';
-            document.getElementById('emptyState').classList.remove('hidden');
-            if(window.innerWidth < 1024) toggleSidebar();
-        }
-
-        // --- 4. UTILITY FUNCTIONS ---
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
-        }
-
-        function setView(mode) {
-            const preview = document.getElementById('previewContainer');
-            const code = document.getElementById('codeContainer');
-            const btnPreview = document.getElementById('btnPreview');
-            const btnCode = document.getElementById('btnCode');
-
-            if (mode === 'preview') {
-                preview.classList.remove('hidden');
-                code.classList.add('hidden');
-                btnPreview.className = "px-3 py-1 text-xs font-medium rounded bg-zinc-700 text-white transition-all";
-                btnCode.className = "px-3 py-1 text-xs font-medium rounded text-zinc-400 hover:text-white transition-all";
-            } else {
-                preview.classList.add('hidden');
-                code.classList.remove('hidden');
-                btnCode.className = "px-3 py-1 text-xs font-medium rounded bg-zinc-700 text-white transition-all";
-                btnPreview.className = "px-3 py-1 text-xs font-medium rounded text-zinc-400 hover:text-white transition-all";
-            }
-        }
-
-        function toggleSettings() {
-            const modal = document.getElementById('settingsModal');
-            modal.classList.toggle('hidden');
-        }
-
-        function saveSettings() {
-            const key = document.getElementById('apiKey').value;
-            const model = document.getElementById('modelId').value;
-            state.apiKey = key;
-            state.model = model;
-            localStorage.setItem('ab_key', key);
-            localStorage.setItem('ab_model', model);
-            toggleSettings();
-        }
-
-        function downloadCode() {
-            if (!state.currentCode) return;
-            const blob = new Blob([state.currentCode], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'website.html';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
     </script>
 </body>
 </html>
