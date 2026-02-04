@@ -2,353 +2,473 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Website Builder</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bgMain: '#09090b',
-                        bgSidebar: '#18181b',
-                        borderZinc: '#27272a',
-                        textMain: '#e4e4e7',
-                        accent: '#3b82f6'
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        /* Custom Scrollbar for Webkit */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #09090b; }
-        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+        /* Custom Scrollbar for Dark Mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; 
+        }
 
+        /* Syntax Highlighting Mock for Textarea */
+        .code-font {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
         /* Loader Animation */
         .loader {
-            border: 3px solid #27272a;
+            border: 3px solid #f3f3f3;
             border-top: 3px solid #3b82f6;
             border-radius: 50%;
             width: 20px;
             height: 20px;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Utility for 100dvh */
-        .h-dvh { height: 100dvh; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-bgMain text-textMain font-sans overflow-hidden flex flex-col h-dvh">
+<body class="bg-gray-900 text-white overflow-hidden m-0 p-0">
 
-    <header class="h-14 border-b border-borderZinc flex items-center justify-between px-4 bg-bgMain shrink-0 z-20">
-        <div class="flex items-center gap-3">
-            <button id="menuBtn" class="md:hidden text-zinc-400 hover:text-white p-2">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <h1 class="font-bold text-lg tracking-tight"><i class="fa-solid fa-code text-accent mr-2"></i>Builder.ai</h1>
-        </div>
-        <div class="flex items-center gap-3">
-            <button id="settingsBtn" class="text-zinc-400 hover:text-white transition p-2">
-                <i class="fa-solid fa-gear"></i>
-            </button>
-        </div>
-    </header>
+    <div class="flex h-[100dvh] w-full overflow-hidden">
 
-    <div class="flex flex-1 overflow-hidden relative">
-
-        <div id="sidebarBackdrop" class="fixed inset-0 bg-black/60 z-30 hidden md:hidden transition-opacity"></div>
-
-        <aside id="sidebar" class="absolute md:relative inset-y-0 left-0 w-72 bg-bgSidebar border-r border-borderZinc transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col h-full shadow-2xl md:shadow-none">
-            
-            <div class="p-4 border-b border-borderZinc flex justify-between items-center">
-                <span class="text-sm font-semibold text-zinc-400 uppercase tracking-wider">History</span>
-                <button id="closeSidebarBtn" class="md:hidden text-zinc-400 hover:text-white">
+        <aside id="sidebar" class="hidden md:flex flex-col w-64 bg-gray-800 border-r border-gray-700 transition-all duration-300 z-20 absolute md:relative h-full">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h1 class="font-bold text-lg"><i class="fa-solid fa-robot text-blue-500 mr-2"></i>AI Builder</h1>
+                <button id="close-sidebar-mobile" class="md:hidden text-gray-400 hover:text-white">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <div id="historyList" class="flex-1 overflow-y-auto p-2 space-y-1">
-                </div>
+            <div class="flex-1 overflow-y-auto p-2 space-y-2" id="history-list">
+                <div class="text-center text-gray-500 text-sm mt-10">No projects yet.</div>
+            </div>
 
-            <div class="p-4 border-t border-borderZinc text-xs text-zinc-500 text-center">
-                Stored locally in browser
+            <div class="p-4 border-t border-gray-700 mt-auto">
+                <button id="btn-open-settings" class="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 p-2 rounded text-sm transition-colors">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </button>
             </div>
         </aside>
 
-        <main class="flex-1 flex flex-col bg-bgMain relative w-full">
+        <main class="flex-1 flex flex-col min-w-0 relative">
             
-            <div class="h-10 border-b border-borderZinc bg-bgMain flex items-center px-4 justify-between shrink-0">
-                <div class="flex gap-2">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-                <div class="text-xs text-zinc-500 font-mono">preview.html</div>
-                <div class="w-8"></div> </div>
-
-            <div class="flex-1 relative bg-white/5 w-full">
-                <iframe id="previewFrame" class="w-full h-full border-none bg-white" sandbox="allow-scripts allow-modals"></iframe>
+            <header class="h-14 bg-gray-800 border-b border-gray-700 flex items-center justify-between px-4 shrink-0">
                 
-                <div id="statusOverlay" class="absolute inset-0 bg-bgMain flex flex-col items-center justify-center z-10">
-                    <div id="statusIcon" class="text-zinc-700 text-6xl mb-4"><i class="fa-brands fa-html5"></i></div>
-                    <p id="statusText" class="text-zinc-500">Enter a prompt to generate a website</p>
-                    <div id="loader" class="hidden mt-4 loader"></div>
+                <div class="flex items-center gap-4">
+                    <button id="btn-mobile-menu" class="md:hidden text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="flex gap-2 group">
+                        <div class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 cursor-pointer"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 cursor-pointer"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 cursor-pointer"></div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-700 p-1 rounded-lg flex text-xs font-medium">
+                    <button id="btn-view-preview" class="px-3 py-1 rounded bg-blue-600 text-white shadow transition-all">
+                        <i class="fa-solid fa-eye mr-1"></i> Preview
+                    </button>
+                    <button id="btn-view-code" class="px-3 py-1 rounded text-gray-300 hover:text-white transition-all">
+                        <i class="fa-solid fa-code mr-1"></i> Code
+                    </button>
+                </div>
+
+                <div>
+                    <button id="btn-download" class="text-gray-300 hover:text-green-400 transition-colors" title="Download HTML">
+                        <i class="fa-solid fa-download text-lg"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 relative bg-gray-900 overflow-hidden">
+                
+                <div id="container-preview" class="w-full h-full bg-white">
+                    <iframe id="preview-frame" class="w-full h-full border-none" sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"></iframe>
+                </div>
+
+                <div id="container-code" class="w-full h-full hidden">
+                    <textarea id="code-editor" class="w-full h-full bg-[#1e1e1e] text-[#d4d4d4] p-4 font-mono text-sm resize-none focus:outline-none" readonly></textarea>
+                </div>
+
+                <div id="welcome-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-gray-500 z-10 pointer-events-none">
+                    <i class="fa-solid fa-wand-magic-sparkles text-4xl mb-4 text-gray-700"></i>
+                    <p>Enter a prompt to build a website</p>
                 </div>
             </div>
+
+            <footer class="p-4 bg-gray-800 border-t border-gray-700 shrink-0">
+                <form id="prompt-form" class="relative max-w-4xl mx-auto w-full">
+                    <textarea 
+                        id="user-prompt" 
+                        rows="1" 
+                        class="w-full bg-gray-700 text-white rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden" 
+                        placeholder="Describe your website (e.g., 'A portfolio for a photographer in dark mode')..."
+                        style="min-height: 48px; max-height: 120px;"
+                    ></textarea>
+                    <button type="submit" id="btn-send" class="absolute right-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors h-8 w-8 flex items-center justify-center">
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                    <div id="loading-indicator" class="hidden absolute right-14 bottom-3 flex items-center gap-2 text-xs text-blue-400">
+                        <div class="loader"></div>
+                        <span>Generating...</span>
+                    </div>
+                </form>
+            </footer>
 
         </main>
     </div>
 
-    <footer class="bg-bgMain border-t border-borderZinc p-3 md:p-4 shrink-0 z-20">
-        <form id="promptForm" class="relative max-w-4xl mx-auto w-full">
-            <input 
-                type="text" 
-                id="promptInput" 
-                class="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all placeholder-zinc-600"
-                placeholder="Describe your website (e.g. 'A coffee shop landing page')..."
-                autocomplete="off"
-            >
-            <button 
-                type="submit" 
-                class="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-accent p-2 transition-colors disabled:opacity-50"
-                id="sendBtn"
-            >
-                <i class="fa-solid fa-paper-plane"></i>
-            </button>
-        </form>
-    </footer>
-
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-bgSidebar border border-borderZinc rounded-xl w-full max-w-sm shadow-2xl p-6">
-            <h2 class="text-lg font-bold mb-4">API Settings</h2>
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-sliders"></i> Configuration
+            </h2>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-400 mb-1">OpenRouter/OpenAI API Key</label>
-                    <input type="password" id="apiKeyInput" class="w-full bg-black border border-zinc-700 rounded px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" placeholder="sk-...">
+                    <label class="block text-sm text-gray-400 mb-1">OpenRouter API Key</label>
+                    <div class="relative">
+                        <input type="password" id="input-api-key" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="sk-or-...">
+                        <button type="button" id="toggle-key-visibility" class="absolute right-2 top-2 text-gray-500 hover:text-white">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Stored locally in your browser.</p>
                 </div>
+                
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-400 mb-1">Model ID</label>
-                    <input type="text" id="modelIdInput" class="w-full bg-black border border-zinc-700 rounded px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" value="openai/gpt-3.5-turbo" placeholder="e.g. anthropic/claude-3-haiku">
+                    <label class="block text-sm text-gray-400 mb-1">Model ID</label>
+                    <input type="text" id="input-model" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-sm focus:border-blue-500 focus:outline-none" placeholder="google/gemini-2.0-flash-exp:free">
+                    <p class="text-xs text-gray-500 mt-1">Recommended: <code class="bg-gray-700 px-1 rounded">google/gemini-2.0-flash-exp:free</code> or <code class="bg-gray-700 px-1 rounded">deepseek/deepseek-r1</code></p>
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end gap-3">
-                <button id="cancelSettings" class="px-4 py-2 text-sm text-zinc-400 hover:text-white">Cancel</button>
-                <button id="saveSettings" class="px-4 py-2 bg-accent hover:bg-blue-600 text-white text-sm rounded transition-colors">Save</button>
+            <div class="flex justify-end gap-2 mt-6">
+                <button id="btn-close-settings" class="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 text-sm">Cancel</button>
+                <button id="btn-save-settings" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 text-sm font-bold">Save</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONSTANTS ---
-        const SYSTEM_PROMPT = "You are an expert web developer. Output ONLY raw single-file HTML code. Do not use Markdown. No explanations. Include CSS inside <style> tags and JS inside <script> tags. The code must be complete and ready to run.";
-        
-        // --- DOM ELEMENTS ---
-        const els = {
-            sidebar: document.getElementById('sidebar'),
-            sidebarBackdrop: document.getElementById('sidebarBackdrop'),
-            menuBtn: document.getElementById('menuBtn'),
-            closeSidebarBtn: document.getElementById('closeSidebarBtn'),
-            settingsBtn: document.getElementById('settingsBtn'),
-            settingsModal: document.getElementById('settingsModal'),
-            cancelSettings: document.getElementById('cancelSettings'),
-            saveSettings: document.getElementById('saveSettings'),
-            apiKeyInput: document.getElementById('apiKeyInput'),
-            modelIdInput: document.getElementById('modelIdInput'),
-            promptForm: document.getElementById('promptForm'),
-            promptInput: document.getElementById('promptInput'),
-            sendBtn: document.getElementById('sendBtn'),
-            previewFrame: document.getElementById('previewFrame'),
-            statusOverlay: document.getElementById('statusOverlay'),
-            statusText: document.getElementById('statusText'),
-            loader: document.getElementById('loader'),
-            historyList: document.getElementById('historyList'),
-            statusIcon: document.getElementById('statusIcon')
-        };
+        // --- 1. CONFIG & SYSTEM PROMPT ---
+        const SYSTEM_PROMPT = `You are an expert Senior Full-Stack Engineer and UI/UX Designer.
+Your task is to generate a COMPLETE, SINGLE-FILE HTML website based on the user's request.
 
-        // --- STATE ---
-        let state = {
+STRICT RULES:
+1. Output ONLY valid HTML5 code. Do NOT output markdown backticks like \`\`\`html or \`\`\`.
+2. Do NOT provide explanations, apologies, or preamble. JUST THE CODE.
+3. The code MUST include embedded CSS (inside <style>) and JS (inside <script>).
+4. Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"><\/script>
+5. Use FontAwesome via CDN: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+6. Ensure the website is responsive, modern, and professional.
+7. If images are needed, use valid placeholders from unsplash (e.g., https://source.unsplash.com/random/800x600?nature).
+`;
+
+        // --- 2. STATE MANAGEMENT ---
+        const state = {
             apiKey: localStorage.getItem('ai_builder_key') || '',
-            modelId: localStorage.getItem('ai_builder_model') || 'openai/gpt-3.5-turbo',
-            history: JSON.parse(localStorage.getItem('ai_builder_history') || '[]')
+            model: localStorage.getItem('ai_builder_model') || 'google/gemini-2.0-flash-exp:free',
+            history: JSON.parse(localStorage.getItem('ai_builder_history')) || [],
+            currentCode: '',
+            isGenerating: false
         };
 
-        // --- INITIALIZATION ---
+        // --- 3. DOM ELEMENTS ---
+        const els = {
+            // Views
+            iframe: document.getElementById('preview-frame'),
+            codeEditor: document.getElementById('code-editor'),
+            containerPreview: document.getElementById('container-preview'),
+            containerCode: document.getElementById('container-code'),
+            welcomeScreen: document.getElementById('welcome-screen'),
+            
+            // Sidebar & History
+            sidebar: document.getElementById('sidebar'),
+            historyList: document.getElementById('history-list'),
+            btnMobileMenu: document.getElementById('btn-mobile-menu'),
+            btnCloseSidebarMobile: document.getElementById('close-sidebar-mobile'),
+            
+            // Header Controls
+            btnPreview: document.getElementById('btn-view-preview'),
+            btnCode: document.getElementById('btn-view-code'),
+            btnDownload: document.getElementById('btn-download'),
+            
+            // Footer Input
+            promptForm: document.getElementById('prompt-form'),
+            userPrompt: document.getElementById('user-prompt'),
+            btnSend: document.getElementById('btn-send'),
+            loadingIndicator: document.getElementById('loading-indicator'),
+            
+            // Settings Modal
+            modalSettings: document.getElementById('settings-modal'),
+            btnOpenSettings: document.getElementById('btn-open-settings'),
+            btnCloseSettings: document.getElementById('btn-close-settings'),
+            btnSaveSettings: document.getElementById('btn-save-settings'),
+            inputApiKey: document.getElementById('input-api-key'),
+            inputModel: document.getElementById('input-model'),
+            toggleKeyVisibility: document.getElementById('toggle-key-visibility')
+        };
+
+        // --- 4. INITIALIZATION ---
         function init() {
             renderHistory();
-            if(!state.apiKey) {
-                // Open settings if no key found on first load
-                setTimeout(() => toggleModal(true), 500);
+            autoResizeTextarea();
+            
+            // Load last project if exists
+            if (state.history.length > 0) {
+                loadProject(state.history[0].id);
             }
         }
 
-        // --- SIDEBAR LOGIC (Mobile Drawer) ---
-        function toggleSidebar(show) {
-            if (show) {
-                els.sidebar.classList.remove('-translate-x-full');
-                els.sidebarBackdrop.classList.remove('hidden');
+        // --- 5. CORE FUNCTIONS ---
+
+        // Toggle Views
+        function switchView(mode) {
+            if (mode === 'preview') {
+                els.containerPreview.classList.remove('hidden');
+                els.containerCode.classList.add('hidden');
+                
+                els.btnPreview.classList.add('bg-blue-600', 'text-white');
+                els.btnPreview.classList.remove('text-gray-300');
+                
+                els.btnCode.classList.remove('bg-blue-600', 'text-white');
+                els.btnCode.classList.add('text-gray-300');
             } else {
-                els.sidebar.classList.add('-translate-x-full');
-                els.sidebarBackdrop.classList.add('hidden');
+                els.containerPreview.classList.add('hidden');
+                els.containerCode.classList.remove('hidden');
+                
+                els.btnCode.classList.add('bg-blue-600', 'text-white');
+                els.btnCode.classList.remove('text-gray-300');
+                
+                els.btnPreview.classList.remove('bg-blue-600', 'text-white');
+                els.btnPreview.classList.add('text-gray-300');
             }
         }
 
-        els.menuBtn.addEventListener('click', () => toggleSidebar(true));
-        els.closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
-        els.sidebarBackdrop.addEventListener('click', () => toggleSidebar(false));
-
-        // --- SETTINGS LOGIC ---
-        function toggleModal(show) {
-            if(show) {
-                els.apiKeyInput.value = state.apiKey;
-                els.modelIdInput.value = state.modelId;
-                els.settingsModal.classList.remove('hidden');
-            } else {
-                els.settingsModal.classList.add('hidden');
-            }
-        }
-
-        els.settingsBtn.addEventListener('click', () => toggleModal(true));
-        els.cancelSettings.addEventListener('click', () => toggleModal(false));
-        
-        els.saveSettings.addEventListener('click', () => {
-            state.apiKey = els.apiKeyInput.value.trim();
-            state.modelId = els.modelIdInput.value.trim();
-            localStorage.setItem('ai_builder_key', state.apiKey);
-            localStorage.setItem('ai_builder_model', state.modelId);
-            toggleModal(false);
-            alert('Settings Saved!');
-        });
-
-        // --- HISTORY LOGIC ---
+        // Render Sidebar History
         function renderHistory() {
             els.historyList.innerHTML = '';
-            state.history.forEach((item, index) => {
+            if (state.history.length === 0) {
+                els.historyList.innerHTML = '<div class="text-center text-gray-500 text-xs mt-4">No projects yet</div>';
+                return;
+            }
+
+            state.history.forEach((project, index) => {
                 const div = document.createElement('div');
-                div.className = "group p-3 rounded hover:bg-zinc-800 cursor-pointer transition flex justify-between items-center group";
-                div.innerHTML = `
-                    <div class="truncate text-sm text-zinc-300 w-40">${item.prompt}</div>
-                    <button class="text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition" onclick="deleteHistory(event, ${index})">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                `;
-                div.onclick = (e) => {
-                    if(!e.target.closest('button')) loadFromHistory(index);
+                div.className = `p-3 rounded cursor-pointer hover:bg-gray-700 group flex justify-between items-center text-sm ${index === 0 ? 'bg-gray-700 border-l-2 border-blue-500' : 'bg-transparent'}`;
+                
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'truncate max-w-[140px] text-gray-300 group-hover:text-white';
+                titleSpan.textContent = project.prompt;
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                deleteBtn.className = 'text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity px-2';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteProject(project.id);
                 };
+
+                div.onclick = () => loadProject(project.id);
+                div.appendChild(titleSpan);
+                div.appendChild(deleteBtn);
                 els.historyList.appendChild(div);
             });
         }
 
-        window.deleteHistory = (e, index) => {
-            e.stopPropagation();
-            if(confirm('Delete this project?')) {
-                state.history.splice(index, 1);
-                localStorage.setItem('ai_builder_history', JSON.stringify(state.history));
-                renderHistory();
-            }
-        };
-
-        function loadFromHistory(index) {
-            const item = state.history[index];
-            updatePreview(item.code);
-            // On mobile, close sidebar after selection
-            if(window.innerWidth < 768) toggleSidebar(false);
+        function loadProject(id) {
+            const project = state.history.find(p => p.id === id);
+            if (!project) return;
+            
+            state.currentCode = project.code;
+            els.iframe.srcdoc = state.currentCode;
+            els.codeEditor.value = state.currentCode;
+            els.welcomeScreen.classList.add('hidden'); // Hide welcome screen
+            
+            // Visual update for sidebar active state
+            renderHistory(); 
         }
 
-        // --- CORE GENERATION LOGIC ---
-        els.promptForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const prompt = els.promptInput.value.trim();
-            if(!prompt) return;
-            if(!state.apiKey) {
-                alert('Please set your API Key in settings first.');
-                toggleModal(true);
+        function deleteProject(id) {
+            state.history = state.history.filter(p => p.id !== id);
+            localStorage.setItem('ai_builder_history', JSON.stringify(state.history));
+            els.iframe.srcdoc = '';
+            els.codeEditor.value = '';
+            els.welcomeScreen.classList.remove('hidden');
+            renderHistory();
+        }
+
+        function cleanResponse(content) {
+            // Remove markdown code blocks if the AI disobeyed
+            return content.replace(/^```html/i, '').replace(/^```/i, '').replace(/```$/i, '');
+        }
+
+        // Download Code
+        function downloadCode() {
+            if (!state.currentCode) return alert("No code to download!");
+            const blob = new Blob([state.currentCode], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'website.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- 6. API INTERACTION ---
+        async function generateWebsite(prompt) {
+            if (!state.apiKey) {
+                alert("Please enter your OpenRouter API Key in Settings.");
+                els.modalSettings.classList.remove('hidden');
                 return;
             }
 
             // UI Loading State
-            els.promptInput.disabled = true;
-            els.sendBtn.disabled = true;
-            els.statusOverlay.classList.remove('hidden');
-            els.statusIcon.classList.add('hidden');
-            els.statusText.textContent = "Generating code... This may take a moment.";
-            els.loader.classList.remove('hidden');
+            state.isGenerating = true;
+            els.loadingIndicator.classList.remove('hidden');
+            els.btnSend.disabled = true;
+            els.btnSend.classList.add('opacity-50', 'cursor-not-allowed');
 
             try {
-                const code = await fetchAI(prompt);
+                const response = await fetch("[https://openrouter.ai/api/v1/chat/completions](https://openrouter.ai/api/v1/chat/completions)", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${state.apiKey}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.href, // Required by OpenRouter
+                        "X-Title": "AI Website Builder"
+                    },
+                    body: JSON.stringify({
+                        "model": state.model,
+                        "messages": [
+                            { "role": "system", "content": SYSTEM_PROMPT },
+                            { "role": "user", "content": prompt }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || "API Request Failed");
+                }
+
+                const data = await response.json();
+                let generatedCode = data.choices[0].message.content;
+                generatedCode = cleanResponse(generatedCode);
+
+                // Update State
+                state.currentCode = generatedCode;
                 
-                // Save to history
-                state.history.unshift({ prompt: prompt, code: code, date: new Date().toISOString() });
+                // Update UI
+                els.iframe.srcdoc = generatedCode;
+                els.codeEditor.value = generatedCode;
+                els.welcomeScreen.classList.add('hidden');
+                switchView('preview');
+
+                // Save to History
+                const newProject = {
+                    id: Date.now(),
+                    prompt: prompt,
+                    code: generatedCode,
+                    timestamp: new Date().toISOString()
+                };
+                state.history.unshift(newProject);
                 localStorage.setItem('ai_builder_history', JSON.stringify(state.history));
                 renderHistory();
 
-                // Render
-                updatePreview(code);
-                els.promptInput.value = '';
-
             } catch (error) {
                 console.error(error);
-                alert('Error generating website: ' + error.message);
-                els.statusText.textContent = "Error occurred.";
-                els.loader.classList.add('hidden');
-                els.statusIcon.classList.remove('hidden');
+                alert("Error generating website: " + error.message);
             } finally {
-                els.promptInput.disabled = false;
-                els.sendBtn.disabled = false;
+                state.isGenerating = false;
+                els.loadingIndicator.classList.add('hidden');
+                els.btnSend.disabled = false;
+                els.btnSend.classList.remove('opacity-50', 'cursor-not-allowed');
             }
+        }
+
+        // --- 7. EVENT LISTENERS ---
+
+        // View Toggles
+        els.btnPreview.addEventListener('click', () => switchView('preview'));
+        els.btnCode.addEventListener('click', () => switchView('code'));
+        els.btnDownload.addEventListener('click', downloadCode);
+
+        // Sidebar Toggles
+        els.btnMobileMenu.addEventListener('click', () => {
+            els.sidebar.classList.remove('hidden');
+            els.sidebar.classList.add('absolute', 'inset-y-0', 'left-0');
+        });
+        els.btnCloseSidebarMobile.addEventListener('click', () => {
+            els.sidebar.classList.add('hidden');
+            els.sidebar.classList.remove('absolute', 'inset-y-0', 'left-0');
         });
 
-        async function fetchAI(userPrompt) {
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${state.apiKey}`,
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": window.location.href, // Required by OpenRouter
-                    "X-Title": "AI Website Builder"
-                },
-                body: JSON.stringify({
-                    "model": state.modelId,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": userPrompt}
-                    ]
-                })
+        // Settings Modal
+        els.btnOpenSettings.addEventListener('click', () => {
+            els.inputApiKey.value = state.apiKey;
+            els.inputModel.value = state.model;
+            els.modalSettings.classList.remove('hidden');
+        });
+        els.btnCloseSettings.addEventListener('click', () => els.modalSettings.classList.add('hidden'));
+        els.btnSaveSettings.addEventListener('click', () => {
+            state.apiKey = els.inputApiKey.value.trim();
+            state.model = els.inputModel.value.trim() || 'google/gemini-2.0-flash-exp:free';
+            localStorage.setItem('ai_builder_key', state.apiKey);
+            localStorage.setItem('ai_builder_model', state.model);
+            els.modalSettings.classList.add('hidden');
+            alert('Settings Saved');
+        });
+        els.toggleKeyVisibility.addEventListener('click', () => {
+            els.inputApiKey.type = els.inputApiKey.type === 'password' ? 'text' : 'password';
+        });
+
+        // Prompt Form
+        els.promptForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const prompt = els.userPrompt.value.trim();
+            if (!prompt || state.isGenerating) return;
+            generateWebsite(prompt);
+            els.userPrompt.value = '';
+            els.userPrompt.style.height = 'auto'; // Reset height
+        });
+
+        // Auto-resize Textarea
+        function autoResizeTextarea() {
+            els.userPrompt.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
             });
-
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error?.message || 'API request failed');
-            }
-
-            const data = await response.json();
-            let rawContent = data.choices[0].message.content;
-
-            // Clean Markdown code blocks if present (Common LLM behavior)
-            rawContent = rawContent.replace(/```html/g, '').replace(/```/g, '');
-            return rawContent;
+            // Handle Enter key (Shift+Enter for new line, Enter to submit)
+            els.userPrompt.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    els.promptForm.dispatchEvent(new Event('submit'));
+                }
+            });
         }
 
-        function updatePreview(htmlCode) {
-            // Hide overlay
-            els.statusOverlay.classList.add('hidden');
-            
-            // Inject into iframe
-            const blob = new Blob([htmlCode], { type: 'text/html' });
-            els.previewFrame.src = URL.createObjectURL(blob);
-        }
-
-        // Run
+        // Run Init
         init();
 
     </script>
