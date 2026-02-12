@@ -2,550 +2,388 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Homework Helper - Gemini 2.5 Flash</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium AI Vision Helper</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        glass: "rgba(255, 255, 255, 0.1)",
+                        glassBorder: "rgba(255, 255, 255, 0.2)",
+                        primary: "#3b82f6",
+                        accent: "#8b5cf6"
+                    },
+                    animation: {
+                        'scan': 'scan 2s linear infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%': { top: '0%', opacity: '0' },
+                            '10%': { opacity: '1' },
+                            '90%': { opacity: '1' },
+                            '100%': { top: '100%', opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            color: #ffffff;
+            background: radial-gradient(circle at top left, #1e1b4b, #000000);
             min-height: 100vh;
-            padding: 20px;
+            color: white;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInDown 0.8s ease;
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            color: #a0aec0;
-            font-size: 1.1em;
-        }
-
-        .api-section {
+        /* Glassmorphism Classes */
+        .glass-panel {
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            animation: fadeIn 1s ease;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #cbd5e0;
-            font-weight: 500;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            color: #ffffff;
-            font-size: 1em;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(255, 255, 255, 0.12);
-        }
-
-        input[type="text"]::placeholder {
-            color: #718096;
-        }
-
-        .upload-section {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 2px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeIn 1.2s ease;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        button {
-            padding: 15px 30px;
-            font-size: 1.1em;
-            font-weight: 600;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-camera {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-gallery {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-
-        .btn-solve {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            font-size: 1.2em;
-            padding: 18px 40px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .preview-section {
-            display: none;
-            margin-bottom: 30px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .preview-section.active {
-            display: block;
-        }
-
-        .preview-image {
-            width: 100%;
-            max-height: 400px;
-            object-fit: contain;
-            border-radius: 15px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+        .glass-input {
             background: rgba(0, 0, 0, 0.3);
-        }
-
-        .scanning-animation {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            animation: pulse 1.5s infinite;
-        }
-
-        .scanning-animation.active {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        .result-section {
-            display: none;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 30px;
-            animation: fadeIn 0.8s ease;
+            color: white;
         }
 
-        .result-section.active {
-            display: block;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
         }
-
-        .result-content {
-            color: #e2e8f0;
-            line-height: 1.8;
-            font-size: 1.05em;
+        ::-webkit-scrollbar-track {
+            background: transparent;
         }
-
-        .result-content h1, .result-content h2, .result-content h3 {
-            color: #667eea;
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-
-        .result-content code {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-        }
-
-        .result-content pre {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 15px 0;
-        }
-
-        .error-message {
-            background: rgba(239, 68, 68, 0.2);
-            border: 2px solid rgba(239, 68, 68, 0.5);
-            color: #fca5a5;
-            padding: 15px;
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 10px;
-            margin-top: 20px;
-            display: none;
         }
 
-        .error-message.active {
-            display: block;
-            animation: shake 0.5s ease;
-        }
+        /* Markdown Styles */
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { margin-top: 1em; margin-bottom: 0.5em; font-weight: 700; color: #e2e8f0; }
+        .markdown-body h1 { font-size: 1.5em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.3em; }
+        .markdown-body h2 { font-size: 1.3em; }
+        .markdown-body p { margin-bottom: 1em; line-height: 1.7; color: #cbd5e1; }
+        .markdown-body strong { color: #fff; font-weight: 600; }
+        .markdown-body ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
+        .markdown-body ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
+        .markdown-body code { background: rgba(255,255,255,0.1); padding: 0.2em 0.4em; border-radius: 4px; font-family: monospace; font-size: 0.9em; color: #60a5fa; }
+        .markdown-body pre { background: #0f172a; padding: 1em; border-radius: 8px; overflow-x: auto; margin-bottom: 1em; border: 1px solid rgba(255,255,255,0.1); }
+        .markdown-body pre code { background: transparent; padding: 0; color: #e2e8f0; }
+        .markdown-body blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; color: #94a3b8; font-style: italic; }
 
-        input[type="file"] {
-            display: none;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-                justify-content: center;
-            }
+        /* Scanning Animation Line */
+        .scan-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #3b82f6;
+            box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
+            z-index: 10;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>🎓 AI Homework Helper</h1>
-            <p class="subtitle">Powered by Gemini 2.5 Flash - The Fastest AI Vision Model</p>
-        </header>
+<body class="antialiased selection:bg-blue-500 selection:text-white">
 
-        <div class="api-section">
-            <div class="input-group">
-                <label for="apiKey">🔑 Enter Your Gemini API Key:</label>
-                <input 
-                    type="text" 
-                    id="apiKey" 
-                    placeholder="AIza...your-api-key-here"
-                    autocomplete="off"
-                >
-                <small style="color: #a0aec0; display: block; margin-top: 8px;">
-                    Get your free API key at <a href="https://aistudio.google.com/apikey" target="_blank" style="color: #667eea;">Google AI Studio</a>
-                </small>
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b-0 border-b-glassBorder">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-brain text-white text-sm"></i>
+                </div>
+                <h1 class="text-lg font-bold tracking-tight text-white">Gemini<span class="text-blue-400">Vision</span></h1>
+            </div>
+            <button onclick="toggleSettings()" class="text-gray-300 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto px-4 pt-20 pb-32 min-h-screen flex flex-col">
+        
+        <div id="welcomeState" class="flex-1 flex flex-col items-center justify-center text-center py-10 opacity-80">
+            <div class="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 animate-pulse-slow">
+                <i class="fa-solid fa-camera-retro text-4xl text-blue-400"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Homework Helper</h2>
+            <p class="text-gray-400 max-w-xs mx-auto">Upload a photo of any question. The AI will detect the language and solve it instantly.</p>
+        </div>
+
+        <div id="previewContainer" class="hidden w-full mb-6 relative rounded-xl overflow-hidden glass-panel group transition-all duration-300">
+            <img id="imagePreview" class="w-full h-auto max-h-[400px] object-contain bg-black/40" src="" alt="Preview">
+            
+            <div id="scanOverlay" class="absolute inset-0 bg-blue-500/10 hidden">
+                <div class="scan-line animate-scan"></div>
+            </div>
+
+            <button onclick="clearImage()" class="absolute top-2 right-2 bg-black/50 hover:bg-red-500/80 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors border border-white/10">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div id="resultContainer" class="hidden w-full glass-panel rounded-xl p-6 mb-6 border-t-2 border-t-blue-500/50">
+            <div class="flex items-center gap-2 mb-4 text-blue-300 text-sm uppercase tracking-wider font-semibold">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> AI Solution
+            </div>
+            <div id="markdownOutput" class="markdown-body text-sm md:text-base">
+                </div>
+        </div>
+
+        <div id="loadingSkeleton" class="hidden w-full glass-panel rounded-xl p-6 mb-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-5 h-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+                <span class="text-blue-300 font-medium text-sm">Analyzing image & text...</span>
+            </div>
+            <div class="space-y-3">
+                <div class="h-4 bg-white/10 rounded w-3/4 animate-pulse"></div>
+                <div class="h-4 bg-white/10 rounded w-full animate-pulse"></div>
+                <div class="h-4 bg-white/10 rounded w-5/6 animate-pulse"></div>
+                <div class="h-20 bg-white/5 rounded w-full mt-4 animate-pulse"></div>
             </div>
         </div>
 
-        <div class="upload-section">
-            <h2 style="margin-bottom: 20px; color: #cbd5e0;">📤 Upload Your Homework</h2>
-            <div class="button-group">
-                <button class="btn-camera" onclick="openCamera()">
-                    📸 Take Photo
-                </button>
-                <button class="btn-gallery" onclick="openGallery()">
-                    🖼️ Choose from Gallery
-                </button>
-            </div>
-            <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="handleImageUpload(event)">
-            <input type="file" id="galleryInput" accept="image/*" onchange="handleImageUpload(event)">
-        </div>
+    </main>
 
-        <div class="preview-section" id="previewSection">
-            <h3 style="margin-bottom: 15px; color: #cbd5e0;">📷 Image Preview:</h3>
-            <img id="previewImage" class="preview-image" alt="Preview">
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="btn-solve" onclick="solveHomework()">
-                    🚀 Solve My Homework!
-                </button>
-            </div>
-        </div>
+    <div class="fixed bottom-0 left-0 w-full p-4 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-10">
+        <div class="max-w-3xl mx-auto grid grid-cols-2 gap-4">
+            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageSelect(this)">
+            <button onclick="document.getElementById('fileInput').click()" class="glass-panel hover:bg-white/10 active:scale-95 transition-all py-4 rounded-xl flex flex-col items-center justify-center gap-2 group">
+                <i class="fa-regular fa-image text-2xl text-purple-400 group-hover:scale-110 transition-transform"></i>
+                <span class="text-sm font-medium">Gallery</span>
+            </button>
 
-        <div class="scanning-animation" id="scanningAnimation">
-            <div class="spinner"></div>
-            <h3>🔍 Analyzing your homework...</h3>
-            <p style="color: #a0aec0; margin-top: 10px;">Gemini 2.5 Flash is processing your image</p>
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(this)">
+            <button onclick="document.getElementById('cameraInput').click()" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 active:scale-95 transition-all py-4 rounded-xl flex flex-col items-center justify-center gap-2 shadow-lg shadow-blue-500/25 group">
+                <i class="fa-solid fa-camera text-2xl text-white group-hover:scale-110 transition-transform"></i>
+                <span class="text-sm font-medium text-white">Camera</span>
+            </button>
         </div>
-
-        <div class="result-section" id="resultSection">
-            <h2 style="margin-bottom: 20px; color: #667eea;">✅ Solution:</h2>
-            <div class="result-content" id="resultContent"></div>
-        </div>
-
-        <div class="error-message" id="errorMessage"></div>
     </div>
 
-    <!-- Marked.js for Markdown Rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- KaTeX for LaTeX Rendering -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <div id="settingsModal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="toggleSettings()"></div>
+        
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md glass-panel p-6 rounded-2xl border border-white/20 shadow-2xl transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Settings</h3>
+                <button onclick="toggleSettings()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">Google Gemini API Key</label>
+                    <div class="relative">
+                        <input type="password" id="apiKeyInput" placeholder="Enter your key..." 
+                            class="w-full glass-input rounded-lg py-3 pl-4 pr-12 outline-none focus:border-blue-500 transition-colors text-sm">
+                        <button onclick="togglePasswordVisibility()" class="absolute right-0 top-0 h-full px-4 text-gray-400 hover:text-white">
+                            <i id="eyeIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fa-solid fa-lock mr-1"></i> Key is stored locally in your browser.
+                    </p>
+                </div>
+                
+                <button onclick="saveSettings()" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors mt-2">
+                    Save & Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md border border-white/10 px-6 py-3 rounded-full text-sm font-medium shadow-xl translate-y-[-150%] transition-transform duration-300 z-[70]">
+        Settings Saved!
+    </div>
 
     <script>
-        let imageBase64 = null;
+        // --- Constants & State ---
+        const MODEL_NAME = "gemini-1.5-flash"; // Using 1.5 Flash (current stable vision model). Switch to 2.5 when available.
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
+        
+        const state = {
+            apiKey: '',
+            isProcessing: false
+        };
 
-        function openCamera() {
-            document.getElementById('cameraInput').click();
-        }
-
-        function openGallery() {
-            document.getElementById('galleryInput').click();
-        }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (!file.type.startsWith('image/')) {
-                showError('Please upload a valid image file!');
-                return;
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('gemini_api_key');
+            if (savedKey) {
+                state.apiKey = savedKey;
+                document.getElementById('apiKeyInput').value = savedKey;
+            } else {
+                // Open settings if no key found first time
+                setTimeout(toggleSettings, 500);
             }
+        });
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64String = e.target.result;
-                imageBase64 = base64String.split(',')[1]; // Remove data:image/png;base64, prefix
+        // --- Settings Logic ---
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function togglePasswordVisibility() {
+            const input = document.getElementById('apiKeyInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function saveSettings() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (key) {
+                state.apiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                toggleSettings();
+                showToast("API Key Saved Successfully");
+            } else {
+                showToast("Please enter a valid API Key");
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('translate-y-[-150%]');
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-150%]');
+            }, 3000);
+        }
+
+        // --- Image Handling ---
+        function handleImageSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+
+                // UI Reset
+                document.getElementById('welcomeState').classList.add('hidden');
+                document.getElementById('resultContainer').classList.add('hidden');
+                document.getElementById('previewContainer').classList.remove('hidden');
                 
-                // Show preview
-                document.getElementById('previewImage').src = base64String;
-                document.getElementById('previewSection').classList.add('active');
-                hideError();
-            };
-            reader.readAsDataURL(file);
+                reader.onload = function(e) {
+                    // Show Preview
+                    document.getElementById('imagePreview').src = e.target.result;
+                    // Start Processing
+                    processImage(e.target.result);
+                }
+                
+                reader.readAsDataURL(file);
+                // Reset input value so same file can be selected again
+                input.value = '';
+            }
         }
 
-        async function solveHomework() {
-            const apiKey = document.getElementById('apiKey').value.trim();
+        function clearImage() {
+            document.getElementById('previewContainer').classList.add('hidden');
+            document.getElementById('resultContainer').classList.add('hidden');
+            document.getElementById('welcomeState').classList.remove('hidden');
+            document.getElementById('imagePreview').src = '';
+        }
 
-            if (!apiKey) {
-                showError('⚠️ Please enter your Gemini API key!');
+        // --- API Integration ---
+        async function processImage(base64String) {
+            if (!state.apiKey) {
+                toggleSettings();
+                showToast("API Key Required");
                 return;
             }
 
-            if (!imageBase64) {
-                showError('⚠️ Please upload an image first!');
-                return;
-            }
+            // Clean base64 string (remove data:image/jpeg;base64, prefix)
+            const base64Data = base64String.split(',')[1];
+            const mimeType = base64String.split(';')[0].split(':')[1];
 
-            // Show loading animation
-            document.getElementById('scanningAnimation').classList.add('active');
-            document.getElementById('resultSection').classList.remove('active');
-            hideError();
-
+            // UI State: Loading
+            document.getElementById('loadingSkeleton').classList.remove('hidden');
+            document.getElementById('scanOverlay').classList.remove('hidden'); // Start Glow Scan
+            
             try {
-                // NEW GEMINI 2.5 FLASH API ENDPOINT
-                const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-                const requestBody = {
+                const payload = {
                     contents: [{
                         parts: [
                             {
-                                text: `You are a genius tutor with expertise in all academic subjects. Analyze this homework problem and provide a comprehensive solution.
-
-Instructions:
-1. Identify the subject and problem type
-2. Provide a clear, step-by-step solution
-3. Explain each step in detail
-4. Show all calculations and reasoning
-5. Use proper mathematical notation with LaTeX for formulas
-6. Highlight key concepts and learning points
-7. If multiple approaches exist, mention them
-8. End with a clear final answer
-
-Format your response using:
-- Markdown for structure (headers, lists, bold, italic)
-- LaTeX notation for math (use $...$ for inline math and $$...$$ for display math)
-- Clear section headers
-- Numbered steps for solutions
-
-Be educational, encouraging, and thorough. Help the student understand the concept, not just get the answer.`
+                                text: "Analyze the text in this image. Detect the language of the question (e.g., Hindi, English, Gujarati). Provide the solution/explanation IN THE SAME LANGUAGE as the image text. Use Markdown and LaTeX for math."
                             },
                             {
                                 inline_data: {
-                                    mime_type: "image/jpeg",
-                                    data: imageBase64
+                                    mime_type: mimeType,
+                                    data: base64Data
                                 }
                             }
                         ]
-                    }],
-                    generationConfig: {
-                        temperature: 0.4,
-                        topK: 32,
-                        topP: 1,
-                        maxOutputTokens: 8192
-                    }
+                    }]
                 };
 
-                const response = await fetch(API_URL, {
+                const response = await fetch(`${API_URL}?key=${state.apiKey}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(requestBody)
+                    body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || `API Error: ${response.status}`);
-                }
-
                 const data = await response.json();
-                
-                if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-                    throw new Error('Invalid response format from API');
+
+                if (data.error) {
+                    throw new Error(data.error.message);
                 }
 
-                const solution = data.candidates[0].content.parts[0].text;
-                displayResult(solution);
+                // Extract Text
+                const aiText = data.candidates[0].content.parts[0].text;
+                
+                // Render Result
+                renderResult(aiText);
 
             } catch (error) {
-                console.error('Error:', error);
-                showError(`❌ Error: ${error.message}`);
+                console.error(error);
+                renderResult(`**Error:** ${error.message}. Please check your API Key or try again.`);
             } finally {
-                document.getElementById('scanningAnimation').classList.remove('active');
+                // UI State: Finished
+                document.getElementById('loadingSkeleton').classList.add('hidden');
+                document.getElementById('scanOverlay').classList.add('hidden'); // Stop Glow Scan
             }
         }
 
-        function displayResult(markdown) {
-            // Convert Markdown to HTML
-            let html = marked.parse(markdown);
+        function renderResult(markdownText) {
+            const container = document.getElementById('resultContainer');
+            const output = document.getElementById('markdownOutput');
             
-            // Display result
-            const resultContent = document.getElementById('resultContent');
-            resultContent.innerHTML = html;
-            document.getElementById('resultSection').classList.add('active');
-
-            // Render LaTeX math
-            renderMathInElement(resultContent, {
-                delimiters: [
-                    {left: '$$', right: '$$', display: true},
-                    {left: '$', right: '$', display: false},
-                    {left: '\\[', right: '\\]', display: true},
-                    {left: '\\(', right: '\\)', display: false}
-                ],
-                throwOnError: false
-            });
-
+            container.classList.remove('hidden');
+            output.innerHTML = marked.parse(markdownText);
+            
             // Scroll to result
-            document.getElementById('resultSection').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'start' 
-            });
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.classList.add('active');
-        }
-
-        function hideError() {
-            document.getElementById('errorMessage').classList.remove('active');
-        }
-
-        // Load API key from localStorage
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedApiKey = localStorage.getItem('gemini_api_key');
-            if (savedApiKey) {
-                document.getElementById('apiKey').value = savedApiKey;
-            }
-
-            // Save API key on input
-            document.getElementById('apiKey').addEventListener('input', (e) => {
-                localStorage.setItem('gemini_api_key', e.target.value);
-            });
-        });
     </script>
 </body>
 </html>
