@@ -2,58 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Premium AI Vision Helper</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium AI Vision | Gemini 2.5 Flash</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        glass: "rgba(255, 255, 255, 0.1)",
-                        glassBorder: "rgba(255, 255, 255, 0.2)",
-                        primary: "#3b82f6",
-                        accent: "#8b5cf6"
-                    },
-                    animation: {
-                        'scan': 'scan 2s linear infinite',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        scan: {
-                            '0%': { top: '0%', opacity: '0' },
-                            '10%': { opacity: '1' },
-                            '90%': { opacity: '1' },
-                            '100%': { top: '100%', opacity: '0' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
 
     <style>
+        /* Custom Animations & Glassmorphism */
         body {
-            background: radial-gradient(circle at top left, #1e1b4b, #000000);
-            min-height: 100vh;
-            color: white;
-            -webkit-tap-highlight-color: transparent;
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            font-family: 'Inter', sans-serif;
         }
 
-        /* Glassmorphism Classes */
         .glass-panel {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(16px);
@@ -62,327 +34,348 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .glass-input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
+        /* Scanning Animation */
+        .scanner-container {
+            position: relative;
+            overflow: hidden;
         }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-
-        /* Markdown Styles */
-        .markdown-body h1, .markdown-body h2, .markdown-body h3 { margin-top: 1em; margin-bottom: 0.5em; font-weight: 700; color: #e2e8f0; }
-        .markdown-body h1 { font-size: 1.5em; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.3em; }
-        .markdown-body h2 { font-size: 1.3em; }
-        .markdown-body p { margin-bottom: 1em; line-height: 1.7; color: #cbd5e1; }
-        .markdown-body strong { color: #fff; font-weight: 600; }
-        .markdown-body ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
-        .markdown-body ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1em; }
-        .markdown-body code { background: rgba(255,255,255,0.1); padding: 0.2em 0.4em; border-radius: 4px; font-family: monospace; font-size: 0.9em; color: #60a5fa; }
-        .markdown-body pre { background: #0f172a; padding: 1em; border-radius: 8px; overflow-x: auto; margin-bottom: 1em; border: 1px solid rgba(255,255,255,0.1); }
-        .markdown-body pre code { background: transparent; padding: 0; color: #e2e8f0; }
-        .markdown-body blockquote { border-left: 4px solid #3b82f6; padding-left: 1em; color: #94a3b8; font-style: italic; }
-
-        /* Scanning Animation Line */
-        .scan-line {
+        .scanner-line {
             position: absolute;
+            top: 0;
             left: 0;
             width: 100%;
             height: 2px;
-            background: #3b82f6;
-            box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
+            background: #38bdf8; /* Cyan-400 */
+            box-shadow: 0 0 10px #38bdf8, 0 0 20px #38bdf8;
+            animation: scan 2s linear infinite;
+            display: none; /* Hidden by default */
             z-index: 10;
         }
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Markdown Styles */
+        .markdown-body { color: #e2e8f0; line-height: 1.6; }
+        .markdown-body h1, .markdown-body h2 { color: #f8fafc; font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; }
+        .markdown-body code { background: rgba(255,255,255,0.1); padding: 0.2em 0.4em; border-radius: 4px; font-family: monospace; }
+        .markdown-body pre { background: #1e293b; padding: 1em; border-radius: 8px; overflow-x: auto; margin: 1em 0; }
+        
+        /* Toast Animation */
+        .toast-enter { transform: translateY(100%); opacity: 0; }
+        .toast-enter-active { transform: translateY(0); opacity: 1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .toast-exit { transform: translateY(0); opacity: 1; }
+        .toast-exit-active { transform: translateY(100%); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="antialiased selection:bg-blue-500 selection:text-white">
+<body class="min-h-screen text-slate-200 p-4 md:p-8 flex flex-col items-center">
 
-    <nav class="fixed top-0 w-full z-50 glass-panel border-b-0 border-b-glassBorder">
-        <div class="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <i class="fa-solid fa-brain text-white text-sm"></i>
-                </div>
-                <h1 class="text-lg font-bold tracking-tight text-white">Gemini<span class="text-blue-400">Vision</span></h1>
+    <header class="w-full max-w-2xl mb-8 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-eye text-white text-lg"></i>
             </div>
-            <button onclick="toggleSettings()" class="text-gray-300 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10">
-                <i class="fa-solid fa-gear"></i>
-            </button>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Vision AI</h1>
+                <p class="text-xs text-slate-400">Powered by Gemini 2.5 Flash</p>
+            </div>
         </div>
-    </nav>
-
-    <main class="max-w-3xl mx-auto px-4 pt-20 pb-32 min-h-screen flex flex-col">
         
-        <div id="welcomeState" class="flex-1 flex flex-col items-center justify-center text-center py-10 opacity-80">
-            <div class="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 animate-pulse-slow">
-                <i class="fa-solid fa-camera-retro text-4xl text-blue-400"></i>
-            </div>
-            <h2 class="text-2xl font-bold mb-2">Homework Helper</h2>
-            <p class="text-gray-400 max-w-xs mx-auto">Upload a photo of any question. The AI will detect the language and solve it instantly.</p>
-        </div>
-
-        <div id="previewContainer" class="hidden w-full mb-6 relative rounded-xl overflow-hidden glass-panel group transition-all duration-300">
-            <img id="imagePreview" class="w-full h-auto max-h-[400px] object-contain bg-black/40" src="" alt="Preview">
-            
-            <div id="scanOverlay" class="absolute inset-0 bg-blue-500/10 hidden">
-                <div class="scan-line animate-scan"></div>
-            </div>
-
-            <button onclick="clearImage()" class="absolute top-2 right-2 bg-black/50 hover:bg-red-500/80 text-white w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-colors border border-white/10">
-                <i class="fa-solid fa-xmark"></i>
+        <div class="relative group">
+            <button id="settingsBtn" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+                <i class="fa-solid fa-gear text-slate-400"></i>
             </button>
         </div>
+    </header>
 
-        <div id="resultContainer" class="hidden w-full glass-panel rounded-xl p-6 mb-6 border-t-2 border-t-blue-500/50">
-            <div class="flex items-center gap-2 mb-4 text-blue-300 text-sm uppercase tracking-wider font-semibold">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> AI Solution
+    <main class="w-full max-w-2xl flex flex-col gap-6">
+
+        <div id="apiKeySection" class="glass-panel rounded-2xl p-4 transition-all duration-300">
+            <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">API Configuration</label>
+            <div class="relative">
+                <input type="password" id="apiKeyInput" placeholder="Paste your Gemini API Key here" 
+                    class="w-full bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-3 pr-10 placeholder-slate-600 outline-none transition-all">
+                <button id="toggleKeyBtn" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-cyan-400 cursor-pointer">
+                    <i class="fa-regular fa-eye-slash" id="eyeIcon"></i>
+                </button>
             </div>
-            <div id="markdownOutput" class="markdown-body text-sm md:text-base">
-                </div>
         </div>
 
-        <div id="loadingSkeleton" class="hidden w-full glass-panel rounded-xl p-6 mb-6">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-5 h-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
-                <span class="text-blue-300 font-medium text-sm">Analyzing image & text...</span>
+        <div class="glass-panel rounded-3xl p-1 overflow-hidden">
+            <div id="dropZone" class="scanner-container relative w-full h-64 md:h-80 bg-slate-900/40 rounded-t-[20px] flex flex-col items-center justify-center border-b border-white/5 group cursor-pointer transition-colors hover:bg-slate-900/60">
+                
+                <div id="uploadPlaceholder" class="flex flex-col items-center text-slate-500 group-hover:text-slate-400 transition-colors">
+                    <i class="fa-solid fa-cloud-arrow-up text-4xl mb-3"></i>
+                    <p class="text-sm font-medium">Tap to Upload or Drag Image</p>
+                </div>
+
+                <img id="imagePreview" class="hidden w-full h-full object-contain z-10" alt="Preview" />
+                
+                <div id="scannerLine" class="scanner-line"></div>
+                
+                <div id="loadingOverlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm z-20 hidden flex-col items-center justify-center">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-cyan-400 mb-3"></div>
+                    <p class="text-cyan-400 text-sm font-mono animate-pulse">ANALYZING...</p>
+                </div>
             </div>
-            <div class="space-y-3">
-                <div class="h-4 bg-white/10 rounded w-3/4 animate-pulse"></div>
-                <div class="h-4 bg-white/10 rounded w-full animate-pulse"></div>
-                <div class="h-4 bg-white/10 rounded w-5/6 animate-pulse"></div>
-                <div class="h-20 bg-white/5 rounded w-full mt-4 animate-pulse"></div>
+
+            <div class="p-4 flex flex-col gap-4">
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="document.getElementById('cameraInput').click()" 
+                        class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-all border border-slate-700 hover:border-slate-500">
+                        <i class="fa-solid fa-camera"></i> Camera
+                    </button>
+                    <button onclick="document.getElementById('galleryInput').click()" 
+                        class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-all border border-slate-700 hover:border-slate-500">
+                        <i class="fa-regular fa-image"></i> Gallery
+                    </button>
+                </div>
+
+                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImage(this)">
+                <input type="file" id="galleryInput" accept="image/*" class="hidden" onchange="handleImage(this)">
+
+                <div class="relative">
+                    <input type="text" id="promptInput" placeholder="Ask something about this image..." 
+                        class="w-full bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-cyan-500 focus:border-cyan-500 block p-4 pr-12 outline-none transition-all">
+                    
+                    <button id="sendBtn" class="absolute inset-y-1 right-1 w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center text-white hover:shadow-lg hover:shadow-cyan-500/30 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
+        </div>
+
+        <div id="outputSection" class="glass-panel rounded-2xl p-6 hidden animate-[fadeIn_0.5s_ease-out]">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
+                <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider"><i class="fa-solid fa-robot mr-2"></i>AI Analysis</h3>
+                <span id="modelBadge" class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded border border-cyan-500/20">GEMINI 2.5</span>
+            </div>
+            <div id="markdownOutput" class="markdown-body text-sm text-slate-300"></div>
         </div>
 
     </main>
 
-    <div class="fixed bottom-0 left-0 w-full p-4 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-10">
-        <div class="max-w-3xl mx-auto grid grid-cols-2 gap-4">
-            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageSelect(this)">
-            <button onclick="document.getElementById('fileInput').click()" class="glass-panel hover:bg-white/10 active:scale-95 transition-all py-4 rounded-xl flex flex-col items-center justify-center gap-2 group">
-                <i class="fa-regular fa-image text-2xl text-purple-400 group-hover:scale-110 transition-transform"></i>
-                <span class="text-sm font-medium">Gallery</span>
-            </button>
-
-            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(this)">
-            <button onclick="document.getElementById('cameraInput').click()" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 active:scale-95 transition-all py-4 rounded-xl flex flex-col items-center justify-center gap-2 shadow-lg shadow-blue-500/25 group">
-                <i class="fa-solid fa-camera text-2xl text-white group-hover:scale-110 transition-transform"></i>
-                <span class="text-sm font-medium text-white">Camera</span>
-            </button>
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-slate-800 border border-amber-500/50 text-white px-4 py-3 rounded-xl shadow-2xl shadow-black/50 transition-all duration-300 transform translate-y-24 opacity-0 z-50">
+        <div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500">
+            <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
-    </div>
-
-    <div id="settingsModal" class="fixed inset-0 z-[60] hidden">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="toggleSettings()"></div>
-        
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md glass-panel p-6 rounded-2xl border border-white/20 shadow-2xl transform transition-all scale-100">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold">Settings</h3>
-                <button onclick="toggleSettings()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">Google Gemini API Key</label>
-                    <div class="relative">
-                        <input type="password" id="apiKeyInput" placeholder="Enter your key..." 
-                            class="w-full glass-input rounded-lg py-3 pl-4 pr-12 outline-none focus:border-blue-500 transition-colors text-sm">
-                        <button onclick="togglePasswordVisibility()" class="absolute right-0 top-0 h-full px-4 text-gray-400 hover:text-white">
-                            <i id="eyeIcon" class="fa-solid fa-eye"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2">
-                        <i class="fa-solid fa-lock mr-1"></i> Key is stored locally in your browser.
-                    </p>
-                </div>
-                
-                <button onclick="saveSettings()" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-colors mt-2">
-                    Save & Close
-                </button>
-            </div>
+        <div>
+            <h4 class="text-sm font-bold text-amber-500">System Fallback</h4>
+            <p class="text-xs text-slate-300">Switched to Stable Model (1.5)</p>
         </div>
-    </div>
-
-    <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md border border-white/10 px-6 py-3 rounded-full text-sm font-medium shadow-xl translate-y-[-150%] transition-transform duration-300 z-[70]">
-        Settings Saved!
     </div>
 
     <script>
-        // --- Constants & State ---
-        const MODEL_NAME = "gemini-1.5-flash"; // Using 1.5 Flash (current stable vision model). Switch to 2.5 when available.
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`;
-        
-        const state = {
-            apiKey: '',
-            isProcessing: false
+        // --- Configuration & State ---
+        const ELEMENTS = {
+            apiKeyInput: document.getElementById('apiKeyInput'),
+            toggleKeyBtn: document.getElementById('toggleKeyBtn'),
+            eyeIcon: document.getElementById('eyeIcon'),
+            imagePreview: document.getElementById('imagePreview'),
+            uploadPlaceholder: document.getElementById('uploadPlaceholder'),
+            dropZone: document.getElementById('dropZone'),
+            scannerLine: document.getElementById('scannerLine'),
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            promptInput: document.getElementById('promptInput'),
+            sendBtn: document.getElementById('sendBtn'),
+            outputSection: document.getElementById('outputSection'),
+            markdownOutput: document.getElementById('markdownOutput'),
+            modelBadge: document.getElementById('modelBadge'),
+            toast: document.getElementById('toast')
         };
+
+        let currentImageBase64 = null;
+        let currentMimeType = null;
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             const savedKey = localStorage.getItem('gemini_api_key');
-            if (savedKey) {
-                state.apiKey = savedKey;
-                document.getElementById('apiKeyInput').value = savedKey;
-            } else {
-                // Open settings if no key found first time
-                setTimeout(toggleSettings, 500);
-            }
+            if (savedKey) ELEMENTS.apiKeyInput.value = savedKey;
         });
 
-        // --- Settings Logic ---
-        function toggleSettings() {
-            const modal = document.getElementById('settingsModal');
-            modal.classList.toggle('hidden');
-        }
+        // --- Event Listeners ---
+        ELEMENTS.apiKeyInput.addEventListener('input', (e) => {
+            localStorage.setItem('gemini_api_key', e.target.value);
+        });
 
-        function togglePasswordVisibility() {
-            const input = document.getElementById('apiKeyInput');
-            const icon = document.getElementById('eyeIcon');
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = "password";
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
+        ELEMENTS.toggleKeyBtn.addEventListener('click', () => {
+            const type = ELEMENTS.apiKeyInput.type === 'password' ? 'text' : 'password';
+            ELEMENTS.apiKeyInput.type = type;
+            ELEMENTS.eyeIcon.className = type === 'password' ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+        });
 
-        function saveSettings() {
-            const key = document.getElementById('apiKeyInput').value.trim();
-            if (key) {
-                state.apiKey = key;
-                localStorage.setItem('gemini_api_key', key);
-                toggleSettings();
-                showToast("API Key Saved Successfully");
-            } else {
-                showToast("Please enter a valid API Key");
-            }
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.remove('translate-y-[-150%]');
-            setTimeout(() => {
-                toast.classList.add('translate-y-[-150%]');
-            }, 3000);
-        }
+        ELEMENTS.sendBtn.addEventListener('click', executeAnalysis);
+        
+        ELEMENTS.dropZone.addEventListener('click', () => {
+            if(!currentImageBase64) document.getElementById('galleryInput').click();
+        });
 
         // --- Image Handling ---
-        function handleImageSelect(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
+        function handleImage(input) {
+            const file = input.files[0];
+            if (!file) return;
 
-                // UI Reset
-                document.getElementById('welcomeState').classList.add('hidden');
-                document.getElementById('resultContainer').classList.add('hidden');
-                document.getElementById('previewContainer').classList.remove('hidden');
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Update UI
+                ELEMENTS.imagePreview.src = e.target.result;
+                ELEMENTS.imagePreview.classList.remove('hidden');
+                ELEMENTS.uploadPlaceholder.classList.add('hidden');
                 
-                reader.onload = function(e) {
-                    // Show Preview
-                    document.getElementById('imagePreview').src = e.target.result;
-                    // Start Processing
-                    processImage(e.target.result);
-                }
+                // Store Data
+                const base64String = e.target.result.split(',')[1];
+                currentImageBase64 = base64String;
+                currentMimeType = file.type;
                 
-                reader.readAsDataURL(file);
-                // Reset input value so same file can be selected again
-                input.value = '';
+                // Reset Output
+                ELEMENTS.outputSection.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- API & Fallback Logic ---
+        async function executeAnalysis() {
+            const apiKey = ELEMENTS.apiKeyInput.value.trim();
+            if (!apiKey) {
+                alert("Please enter your Gemini API Key.");
+                return;
             }
-        }
-
-        function clearImage() {
-            document.getElementById('previewContainer').classList.add('hidden');
-            document.getElementById('resultContainer').classList.add('hidden');
-            document.getElementById('welcomeState').classList.remove('hidden');
-            document.getElementById('imagePreview').src = '';
-        }
-
-        // --- API Integration ---
-        async function processImage(base64String) {
-            if (!state.apiKey) {
-                toggleSettings();
-                showToast("API Key Required");
+            if (!currentImageBase64) {
+                alert("Please select an image first.");
                 return;
             }
 
-            // Clean base64 string (remove data:image/jpeg;base64, prefix)
-            const base64Data = base64String.split(',')[1];
-            const mimeType = base64String.split(';')[0].split(':')[1];
-
-            // UI State: Loading
-            document.getElementById('loadingSkeleton').classList.remove('hidden');
-            document.getElementById('scanOverlay').classList.remove('hidden'); // Start Glow Scan
+            const promptText = ELEMENTS.promptInput.value || "Describe this image in detail.";
             
-            try {
-                const payload = {
-                    contents: [{
-                        parts: [
-                            {
-                                text: "Analyze the text in this image. Detect the language of the question (e.g., Hindi, English, Gujarati). Provide the solution/explanation IN THE SAME LANGUAGE as the image text. Use Markdown and LaTeX for math."
-                            },
-                            {
-                                inline_data: {
-                                    mime_type: mimeType,
-                                    data: base64Data
-                                }
-                            }
-                        ]
-                    }]
-                };
+            // UI Loading State
+            setLoading(true);
 
-                const response = await fetch(`${API_URL}?key=${state.apiKey}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
-                // Extract Text
-                const aiText = data.candidates[0].content.parts[0].text;
+            // 1. Construct the System Instruction & Payload
+            // Note: We use the prompt text to reinforce the system instruction 
+            // to ensure it works across different model versions cleanly.
+            const finalPrompt = `
+                SYSTEM INSTRUCTION: Detect the language of the image text/context. 
+                Answer in the SAME language. Use Markdown formatting and LaTeX for math.
                 
-                // Render Result
-                renderResult(aiText);
+                USER QUERY: ${promptText}
+            `;
 
+            const requestBody = {
+                contents: [{
+                    parts: [
+                        { text: finalPrompt },
+                        { inline_data: { mime_type: currentMimeType, data: currentImageBase64 } }
+                    ]
+                }]
+            };
+
+            // 2. The Fallback Mechanism
+            // Try 2.5 Flash -> Catch -> Try 1.5 Flash
+            try {
+                // PRIMARY ATTEMPT: Gemini 2.5 Flash
+                console.log("Attempting Primary Model: gemini-2.5-flash");
+                await callGeminiAPI("gemini-2.5-flash", apiKey, requestBody);
+                updateBadge("GEMINI 2.5");
+            
             } catch (error) {
-                console.error(error);
-                renderResult(`**Error:** ${error.message}. Please check your API Key or try again.`);
+                console.warn("Primary model failed:", error);
+                
+                // Show Toast
+                showToast();
+
+                // FALLBACK ATTEMPT: Gemini 1.5 Flash
+                try {
+                    console.log("Attempting Fallback Model: gemini-1.5-flash");
+                    await callGeminiAPI("gemini-1.5-flash", apiKey, requestBody);
+                    updateBadge("GEMINI 1.5 (STABLE)");
+                } catch (fallbackError) {
+                    console.error("Fallback failed:", fallbackError);
+                    ELEMENTS.markdownOutput.innerHTML = `<span class="text-red-400">Error: ${fallbackError.message}</span>`;
+                    ELEMENTS.outputSection.classList.remove('hidden');
+                }
             } finally {
-                // UI State: Finished
-                document.getElementById('loadingSkeleton').classList.add('hidden');
-                document.getElementById('scanOverlay').classList.add('hidden'); // Stop Glow Scan
+                setLoading(false);
             }
         }
 
-        function renderResult(markdownText) {
-            const container = document.getElementById('resultContainer');
-            const output = document.getElementById('markdownOutput');
+        // Generic Fetch Function
+        async function callGeminiAPI(model, key, body) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
             
-            container.classList.remove('hidden');
-            output.innerHTML = marked.parse(markdownText);
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                // Throw error to trigger catch block
+                throw new Error(errData.error?.message || `HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
             
-            // Scroll to result
-            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (text) {
+                renderResponse(text);
+            } else {
+                throw new Error("No content generated.");
+            }
+        }
+
+        // --- Helper Functions ---
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                ELEMENTS.loadingOverlay.classList.remove('hidden');
+                ELEMENTS.loadingOverlay.classList.add('flex');
+                ELEMENTS.scannerLine.style.display = 'block';
+                ELEMENTS.sendBtn.disabled = true;
+            } else {
+                ELEMENTS.loadingOverlay.classList.add('hidden');
+                ELEMENTS.loadingOverlay.classList.remove('flex');
+                ELEMENTS.scannerLine.style.display = 'none';
+                ELEMENTS.sendBtn.disabled = false;
+            }
+        }
+
+        function renderResponse(markdown) {
+            // Parse Markdown
+            const rawHtml = marked.parse(markdown);
+            ELEMENTS.markdownOutput.innerHTML = rawHtml;
+            ELEMENTS.outputSection.classList.remove('hidden');
+
+            // Render Math (LaTeX)
+            renderMathInElement(ELEMENTS.markdownOutput, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false},
+                    {left: '\\(', right: '\\)', display: false},
+                    {left: '\\[', right: '\\]', display: true}
+                ],
+                throwOnError : false
+            });
+        }
+
+        function showToast() {
+            ELEMENTS.toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                ELEMENTS.toast.classList.add('translate-y-24', 'opacity-0');
+            }, 4000);
+        }
+
+        function updateBadge(text) {
+            ELEMENTS.modelBadge.innerText = text;
+            if(text.includes("1.5")) {
+                ELEMENTS.modelBadge.className = "text-[10px] bg-amber-500/10 text-amber-500 px-2 py-1 rounded border border-amber-500/20";
+            } else {
+                ELEMENTS.modelBadge.className = "text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded border border-cyan-500/20";
+            }
         }
     </script>
 </body>
