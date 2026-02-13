@@ -3,442 +3,469 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Viva Master - Premium Edition</title>
+    <title>AI Viva Master | Professional Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        
-        /* Custom Scrollbar */
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Pulse Animation for Mic */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
         }
-        .mic-active { animation: pulse-ring 2s infinite; }
-        
-        /* Markdown-like styling for AI responses */
-        .prose p { margin-bottom: 0.5em; }
-        .prose ul { list-style-type: disc; margin-left: 1.5em; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        .pulse-ring {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-slate-800 to-black text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
 
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center">
-        <div class="bg-slate-800 border border-slate-600 rounded-2xl p-8 w-full max-w-lg shadow-2xl transform transition-all scale-100">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 text-cyan-400">
-                <i class="fa-solid fa-cog"></i> Configuration
-            </h2>
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800"><i class="fa-solid fa-cog mr-2 text-blue-600"></i>Settings</h2>
+                <button onclick="toggleSettings()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-300 mb-2">Gemini API Key</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Gemini API Key</label>
                     <div class="relative">
-                        <input type="password" id="apiKeyInput" placeholder="Paste your API Key here..." 
-                            class="w-full bg-slate-900 border border-slate-600 rounded-xl p-4 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all">
-                        <button onclick="toggleKeyVisibility()" class="absolute right-4 top-4 text-slate-400 hover:text-white">
-                            <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                        <input type="password" id="apiKeyInput" placeholder="Paste your API key here..." 
+                            class="w-full pl-4 pr-10 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                        <button onclick="togglePasswordVisibility()" class="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">
+                            <i id="eyeIcon" class="fa-solid fa-eye"></i>
                         </button>
                     </div>
-                    <p class="text-xs text-slate-400 mt-2">Key is stored locally in your browser.</p>
+                    <p class="text-xs text-slate-500 mt-2">
+                        <i class="fa-solid fa-shield-halved mr-1"></i> Your key is saved locally in your browser.
+                    </p>
                 </div>
             </div>
 
-            <div class="mt-8 flex justify-end gap-4">
-                <button onclick="closeSettings()" class="px-6 py-2 rounded-xl text-slate-300 hover:bg-slate-700 transition-colors">Cancel</button>
-                <button onclick="saveSettings()" class="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/30 transition-all">Save Key</button>
+            <div class="mt-8 flex justify-end">
+                <button onclick="saveSettings()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg w-full sm:w-auto">
+                    Save & Close
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="w-full max-w-4xl mx-auto">
+    <main class="w-full max-w-4xl bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 flex flex-col h-[85vh] md:h-[800px]">
         
-        <header class="flex justify-between items-center mb-8">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                    <i class="fa-solid fa-robot text-2xl text-white"></i>
+        <header class="bg-white border-b border-slate-100 p-6 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                    <i class="fa-solid fa-robot text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl md:text-4xl font-bold tracking-tight">AI Viva Master</h1>
-                    <p class="text-slate-400 text-sm md:text-base">Professional Interview Simulator</p>
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">AI Viva Master</h1>
+                    <p class="text-xs text-slate-500 font-medium">Powered by Gemini 2.5 Flash</p>
                 </div>
             </div>
-            <button onclick="openSettings()" class="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all border border-slate-700 group">
-                <i class="fa-solid fa-gear text-xl text-slate-400 group-hover:text-cyan-400 transition-colors"></i>
+            <button onclick="toggleSettings()" class="p-2 text-slate-400 hover:text-blue-600 transition rounded-full hover:bg-slate-50">
+                <i class="fa-solid fa-gear text-xl"></i>
             </button>
         </header>
 
-        <div id="setupCard" class="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-3xl p-6 md:p-10 shadow-2xl">
-            
-            <div class="space-y-8">
-                <div>
-                    <label class="block text-lg font-semibold text-slate-200 mb-3">Interview Topic</label>
-                    <input type="text" id="topicInput" placeholder="e.g., React JS, Thermodynamics, World History..." 
-                        class="w-full bg-slate-900/80 border border-slate-600 rounded-xl p-5 text-lg md:text-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all shadow-inner">
+        <div id="setupView" class="flex-1 flex flex-col justify-center p-8 md:p-12 overflow-y-auto">
+            <div class="max-w-2xl mx-auto w-full space-y-8">
+                
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Ready for your Viva?</h2>
+                    <p class="text-slate-500 text-lg">Configure your session settings below to begin.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-6">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Interviewer Persona</label>
-                        <div class="grid grid-cols-2 gap-3 p-1 bg-slate-900 rounded-xl border border-slate-700">
-                            <button onclick="setMode('friendly')" id="btnFriendly" class="py-3 px-4 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white shadow-lg">
-                                <i class="fa-solid fa-smile mr-2"></i>Friendly
-                            </button>
-                            <button onclick="setMode('strict')" id="btnStrict" class="py-3 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
-                                <i class="fa-solid fa-user-tie mr-2"></i>Strict
-                            </button>
-                        </div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Viva Topic</label>
+                        <input type="text" id="topicInput" 
+                            placeholder="e.g. React Hooks, Thermodynamics, Indian History..." 
+                            class="w-full p-4 text-lg border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition placeholder:text-slate-300">
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Language</label>
-                        <div class="grid grid-cols-2 gap-3 p-1 bg-slate-900 rounded-xl border border-slate-700">
-                            <button onclick="setLang('en-US')" id="btnEn" class="py-3 px-4 rounded-lg text-sm font-medium transition-all bg-blue-600 text-white shadow-lg">
-                                🇺🇸 English
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-slate-50 p-1 rounded-xl flex border border-slate-200">
+                            <button onclick="setMode('friendly')" id="btnFriendly" class="flex-1 py-3 rounded-lg text-sm font-semibold transition-all shadow-sm bg-white text-blue-600 border border-slate-200">
+                                <i class="fa-solid fa-face-smile mr-2"></i>Friendly
                             </button>
-                            <button onclick="setLang('hi-IN')" id="btnHi" class="py-3 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">
-                                🇮🇳 Hindi
+                            <button onclick="setMode('strict')" id="btnStrict" class="flex-1 py-3 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all">
+                                <i class="fa-solid fa-user-graduate mr-2"></i>Strict
                             </button>
+                        </div>
+
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-language text-slate-400"></i>
+                            </div>
+                            <select id="languageSelect" class="w-full pl-10 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-medium focus:ring-2 focus:ring-blue-500 outline-none appearance-none cursor-pointer">
+                                <option value="English">English Language</option>
+                                <option value="Hindi">Hindi Language</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="startViva()" class="w-full py-5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xl rounded-xl shadow-lg shadow-blue-500/25 transform hover:scale-[1.01] transition-all flex items-center justify-center gap-3">
+                <button onclick="startViva()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-lg font-bold py-5 rounded-xl shadow-lg hover:shadow-xl transform transition hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3">
                     <span>Start Interview</span>
                     <i class="fa-solid fa-arrow-right"></i>
                 </button>
+                
+                <p id="errorMsg" class="text-red-500 text-center text-sm font-medium hidden flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i> <span></span>
+                </p>
             </div>
         </div>
 
-        <div id="interfaceCard" class="hidden bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[600px]">
+        <div id="vivaView" class="hidden flex-1 flex flex-col h-full relative">
             
-            <div class="bg-slate-900/80 p-4 border-b border-slate-700 flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold text-white text-lg" id="displayTopic">Topic</h3>
-                    <span class="text-xs text-cyan-400 uppercase tracking-widest font-semibold" id="displayMode">Live Session</span>
+            <div id="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth bg-slate-50/50">
                 </div>
-                <button onclick="endSession()" class="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/50 hover:bg-red-500 hover:text-white rounded-lg text-sm font-medium transition-all">
-                    End Session
-                </button>
-            </div>
 
-            <div id="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
-                <div class="flex justify-start">
-                    <div class="bg-slate-700/50 text-slate-200 p-4 rounded-2xl rounded-tl-none max-w-[80%] border border-slate-600">
-                        <p class="text-sm text-slate-400 mb-1">AI Interviewer</p>
-                        <p>Initializing interview environment...</p>
-                    </div>
+            <div id="loadingIndicator" class="hidden px-6 pb-2">
+                <div class="flex items-center gap-2 bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm w-fit">
+                    <div class="typing-dot w-2 h-2 bg-slate-400 rounded-full"></div>
+                    <div class="typing-dot w-2 h-2 bg-slate-400 rounded-full"></div>
+                    <div class="typing-dot w-2 h-2 bg-slate-400 rounded-full"></div>
                 </div>
             </div>
 
-            <div class="bg-slate-900 p-6 border-t border-slate-700">
-                <div class="flex items-center gap-4">
-                    <button id="micBtn" onclick="toggleMic()" class="h-16 w-16 rounded-full bg-slate-800 border-2 border-slate-600 flex items-center justify-center text-white hover:bg-slate-700 hover:border-cyan-500 transition-all shadow-lg">
-                        <i class="fa-solid fa-microphone text-2xl"></i>
-                    </button>
+            <div class="bg-white p-4 md:p-6 border-t border-slate-100 shrink-0">
+                <div class="max-w-3xl mx-auto flex items-center gap-4">
                     
+                    <button onclick="endSession()" class="shrink-0 w-12 h-12 rounded-full border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-red-500 transition flex items-center justify-center" title="End Session">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+
                     <div class="flex-1 relative">
-                        <input type="text" id="userResponse" placeholder="Type or speak your answer..." 
-                            class="w-full bg-slate-800 border border-slate-600 rounded-xl pl-5 pr-14 py-4 text-white focus:ring-2 focus:ring-cyan-500 outline-none">
-                        <button onclick="sendMessage()" class="absolute right-2 top-2 bottom-2 aspect-square bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg flex items-center justify-center transition-all">
-                            <i class="fa-solid fa-paper-plane"></i>
+                        <input type="text" id="userResponseInput" placeholder="Type your answer here..." 
+                            class="w-full pl-5 pr-14 py-4 bg-slate-50 border border-slate-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition"
+                            onkeypress="handleEnter(event)">
+                        
+                        <button onclick="sendTextResponse()" class="absolute right-2 top-2 w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md transition">
+                            <i class="fa-solid fa-paper-plane text-sm"></i>
                         </button>
                     </div>
+
+                    <button id="micBtn" onclick="toggleSpeech()" class="shrink-0 w-14 h-14 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center justify-center shadow-sm border border-slate-200 relative overflow-visible">
+                        <i class="fa-solid fa-microphone text-xl"></i>
+                    </button>
+
                 </div>
-                <p id="statusText" class="text-center text-xs text-slate-500 mt-3 font-mono">Ready to listen...</p>
             </div>
         </div>
 
-    </div>
+    </main>
 
     <script>
-        // --- Configuration State ---
-        let config = {
-            apiKey: '',
+        // --- CONFIGURATION & STATE ---
+        const CONFIG = {
+            model: "gemini-1.5-flash", // Using stable Flash model (often aliased for speed)
+            apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/"
+        };
+
+        let state = {
+            apiKey: localStorage.getItem('gemini_api_key') || '',
             topic: '',
             mode: 'friendly', // friendly | strict
-            lang: 'en-US',    // en-US | hi-IN
-            isRecording: false
+            language: 'English',
+            isListening: false,
+            history: [],
+            recognition: null,
+            synth: window.speechSynthesis
         };
 
-        let chatHistory = []; // To store context
-        
-        // --- Web Speech API Setup ---
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('apiKeyInput').value = state.apiKey;
+            initSpeechRecognition();
+        });
 
-        const synth = window.speechSynthesis;
-
-        // --- Initialization ---
-        window.onload = () => {
-            const savedKey = localStorage.getItem('gemini_api_key');
-            if(savedKey) {
-                config.apiKey = savedKey;
-                document.getElementById('apiKeyInput').value = savedKey;
-            }
-        };
-
-        // --- UI Functions ---
-        
-        function openSettings() {
-            document.getElementById('settingsModal').classList.remove('hidden');
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').classList.add('hidden');
+        // --- SETTINGS MANAGEMENT ---
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.toggle('hidden');
         }
 
         function saveSettings() {
             const key = document.getElementById('apiKeyInput').value.trim();
-            if(!key) {
+            if (key) {
+                state.apiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                toggleSettings();
+                showError(""); // Clear errors
+            } else {
                 alert("Please enter a valid API Key.");
-                return;
             }
-            localStorage.setItem('gemini_api_key', key);
-            config.apiKey = key;
-            closeSettings();
-            alert("API Key saved securely!");
         }
 
-        function toggleKeyVisibility() {
+        function togglePasswordVisibility() {
             const input = document.getElementById('apiKeyInput');
             const icon = document.getElementById('eyeIcon');
-            if(input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
             } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+                input.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
             }
         }
 
         function setMode(mode) {
-            config.mode = mode;
-            // Visual toggle
+            state.mode = mode;
             const btnFriendly = document.getElementById('btnFriendly');
             const btnStrict = document.getElementById('btnStrict');
             
-            if(mode === 'friendly') {
-                btnFriendly.className = "py-3 px-4 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white shadow-lg";
-                btnStrict.className = "py-3 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+            if (mode === 'friendly') {
+                btnFriendly.className = "flex-1 py-3 rounded-lg text-sm font-semibold transition-all shadow-sm bg-white text-blue-600 border border-slate-200";
+                btnStrict.className = "flex-1 py-3 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all";
             } else {
-                btnStrict.className = "py-3 px-4 rounded-lg text-sm font-medium transition-all bg-purple-600 text-white shadow-lg";
-                btnFriendly.className = "py-3 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
+                btnStrict.className = "flex-1 py-3 rounded-lg text-sm font-semibold transition-all shadow-sm bg-white text-red-600 border border-slate-200";
+                btnFriendly.className = "flex-1 py-3 rounded-lg text-sm font-semibold text-slate-500 hover:text-slate-700 transition-all";
             }
         }
 
-        function setLang(lang) {
-            config.lang = lang;
-            recognition.lang = lang;
-            
-            const btnEn = document.getElementById('btnEn');
-            const btnHi = document.getElementById('btnHi');
-
-            if(lang === 'en-US') {
-                btnEn.className = "py-3 px-4 rounded-lg text-sm font-medium transition-all bg-blue-600 text-white shadow-lg";
-                btnHi.className = "py-3 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
-            } else {
-                btnHi.className = "py-3 px-4 rounded-lg text-sm font-medium transition-all bg-orange-600 text-white shadow-lg";
-                btnEn.className = "py-3 px-4 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white";
-            }
-        }
-
-        // --- Core Application Logic ---
-
+        // --- CORE LOGIC: START VIVA ---
         function startViva() {
-            // 1. Validate API Key
-            if (!config.apiKey) {
-                alert("⚠️ Configuration Error:\nPlease click the ⚙️ icon (top right) and enter your Gemini API Key first.");
-                openSettings();
+            // 1. Validation Logic
+            const errorMsgEl = document.getElementById('errorMsg');
+            const topicInput = document.getElementById('topicInput'); // Correctly targeting ID
+            
+            // Step A: Check API Key
+            if (!state.apiKey) {
+                showError("Please click the ⚙️ icon and enter your Gemini API Key first.");
+                toggleSettings(); // Auto-open settings for UX
                 return;
             }
 
-            // 2. Validate Topic (FIXED: Targeted correct ID and logic)
-            const topicInput = document.getElementById('topicInput');
+            // Step B: Check Topic
             const topicValue = topicInput.value.trim();
-
             if (!topicValue) {
-                alert("⚠️ Input Error:\nPlease enter a Viva Topic to start (e.g., 'React JS', 'History').");
+                showError("Please enter a Viva Topic to begin.");
                 topicInput.focus();
+                topicInput.classList.add('ring-2', 'ring-red-200', 'border-red-400');
+                setTimeout(() => topicInput.classList.remove('ring-2', 'ring-red-200', 'border-red-400'), 2000);
                 return;
             }
 
-            config.topic = topicValue;
-
-            // UI Transition
-            document.getElementById('setupCard').classList.add('hidden');
-            document.getElementById('interfaceCard').classList.remove('hidden');
+            // 2. State Update
+            state.topic = topicValue;
+            state.language = document.getElementById('languageSelect').value;
+            state.history = []; // Reset history
             
-            // Update Interface Header
-            document.getElementById('displayTopic').innerText = config.topic;
-            document.getElementById('displayMode').innerText = config.mode.toUpperCase() + " MODE";
-
-            // Initialize Chat
-            initializeAI();
+            // 3. UI Transition
+            document.getElementById('setupView').classList.add('hidden');
+            document.getElementById('vivaView').classList.remove('hidden');
+            document.getElementById('vivaView').classList.add('flex');
+            
+            // 4. Initial Prompt Generation
+            initiateAIConversation();
         }
 
-        function endSession() {
-            if(confirm("Are you sure you want to end the session?")) {
-                location.reload();
-            }
-        }
-
-        // --- AI Interaction ---
-
-        async function initializeAI() {
-            addMessage("system", "Connecting to AI Examiner...");
-            
-            const initialPrompt = `
-                Act as a ${config.mode} viva examiner. 
-                Topic: ${config.topic}. 
-                Language: ${config.lang === 'hi-IN' ? 'Hindi (Hinglish allowed)' : 'English'}.
-                
-                Instructions:
-                1. Start by introducing yourself and asking the first question about the topic.
-                2. Keep questions concise (max 2 sentences).
-                3. If mode is "Strict", be formal and tough. If "Friendly", be encouraging.
-                4. Wait for user answer.
-            `;
-
-            await callGemini(initialPrompt, true);
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('userResponse');
-            const text = input.value.trim();
-            
-            if(!text) return;
-
-            addMessage("user", text);
-            input.value = '';
-            
-            await callGemini(text, false);
-        }
-
-        async function callGemini(userText, isSystemInit = false) {
-            document.getElementById('statusText').innerText = "AI is thinking...";
-            
-            // Construct context for the API
-            // In a real app, you'd manage history tokens carefully. Here we append simply.
-            if(!isSystemInit) {
-                chatHistory.push({ role: "user", parts: [{ text: userText }] });
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            if(msg) {
+                el.querySelector('span').innerText = msg;
+                el.classList.remove('hidden');
             } else {
-                 // System prompt logic typically goes in the first message or system instruction
-                 // For this simple implementation, we send it as the first user part
-                 chatHistory.push({ role: "user", parts: [{ text: userText }] });
+                el.classList.add('hidden');
             }
+        }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.apiKey}`;
+        // --- AI INTEGRATION ---
+        async function initiateAIConversation() {
+            const systemPrompt = `You are a strict but fair Viva Examiner. 
+            Topic: ${state.topic}. 
+            Mode: ${state.mode}. 
+            Language: ${state.language} (Respond in this language).
+            
+            Start by introducing yourself briefly and asking the first conceptual question about ${state.topic}. 
+            Keep questions concise (1-2 sentences). Wait for the user's answer before asking the next.`;
+            
+            // Add system prompt to history (conceptually, for Gemini API we usually just send history)
+            // For this implementation, we will treat the first message as the trigger.
+            
+            addMessageToUI("system", `Starting Viva on ${state.topic}...`);
+            await fetchGeminiResponse([{ role: "user", parts: [{ text: systemPrompt }] }]);
+        }
 
+        async function fetchGeminiResponse(conversationHistory) {
+            const loading = document.getElementById('loadingIndicator');
+            loading.classList.remove('hidden');
+            
             try {
+                const url = `${CONFIG.apiUrl}${CONFIG.model}:generateContent?key=${state.apiKey}`;
+                
+                const payload = {
+                    contents: conversationHistory,
+                    generationConfig: {
+                        temperature: state.mode === 'strict' ? 0.3 : 0.7,
+                        maxOutputTokens: 300
+                    }
+                };
+
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: chatHistory })
+                    body: JSON.stringify(payload)
                 });
 
                 const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
+                loading.classList.add('hidden');
 
-                const aiResponse = data.candidates[0].content.parts[0].text;
+                if (data.error) throw new Error(data.error.message);
+
+                const aiText = data.candidates[0].content.parts[0].text;
                 
-                // Add AI response to history
-                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                // Update History
+                state.history.push({ role: "model", parts: [{ text: aiText }] });
                 
-                addMessage("ai", aiResponse);
-                speak(aiResponse);
-                document.getElementById('statusText').innerText = "Waiting for your answer...";
+                // UI & Audio
+                addMessageToUI("ai", aiText);
+                speakText(aiText);
 
             } catch (error) {
-                console.error(error);
-                addMessage("system", "Error: " + error.message);
-                document.getElementById('statusText').innerText = "Connection Error";
+                loading.classList.add('hidden');
+                addMessageToUI("system", "Error: " + error.message);
             }
         }
 
-        function addMessage(role, text) {
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendTextResponse();
+        }
+
+        async function sendTextResponse() {
+            const input = document.getElementById('userResponseInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessageToUI("user", text);
+            input.value = '';
+
+            // Add to history and call AI
+            state.history.push({ role: "user", parts: [{ text: text }] });
+            
+            // Construct full context for the API (last few turns to save tokens/complexity, or full history)
+            // Ideally send full history for context retention
+            await fetchGeminiResponse(state.history);
+        }
+
+        // --- UI HELPER FUNCTIONS ---
+        function addMessageToUI(role, text) {
             const container = document.getElementById('chatContainer');
             const div = document.createElement('div');
-            div.className = "flex w-full mb-4 " + (role === 'user' ? "justify-end" : "justify-start");
             
-            let bgClass = role === 'user' ? "bg-cyan-600 text-white rounded-br-none" : "bg-slate-700/50 text-slate-200 rounded-tl-none border border-slate-600";
-            if(role === 'system') bgClass = "bg-red-500/20 text-red-300 border border-red-500/50 text-center w-full justify-center";
+            if (role === 'ai') {
+                div.className = "flex gap-3 max-w-[85%]";
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex-shrink-0 flex items-center justify-center text-white text-xs">AI</div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-2xl rounded-tl-none text-slate-700 shadow-sm leading-relaxed">
+                        ${text}
+                    </div>
+                `;
+            } else if (role === 'user') {
+                div.className = "flex gap-3 max-w-[85%] ml-auto flex-row-reverse";
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center text-slate-500 text-xs"><i class="fa-solid fa-user"></i></div>
+                    <div class="bg-blue-600 text-white p-4 rounded-2xl rounded-tr-none shadow-md leading-relaxed">
+                        ${text}
+                    </div>
+                `;
+            } else {
+                // System message
+                div.className = "flex justify-center my-2";
+                div.innerHTML = `<span class="text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1 rounded-full">${text}</span>`;
+            }
 
-            div.innerHTML = `
-                <div class="${bgClass} p-4 rounded-2xl max-w-[85%] md:max-w-[70%] shadow-md prose">
-                    ${role !== 'system' ? `<p class="text-xs opacity-70 mb-1 capitalize">${role === 'model' ? 'Interviewer' : 'You'}</p>` : ''}
-                    <div>${text}</div>
-                </div>
-            `;
-            
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
         }
 
-        // --- Voice Logic ---
+        // --- SPEECH RECOGNITION & SYNTHESIS ---
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                state.recognition = new webkitSpeechRecognition();
+                state.recognition.continuous = false;
+                state.recognition.interimResults = false;
+                
+                state.recognition.onstart = () => {
+                    state.isListening = true;
+                    const btn = document.getElementById('micBtn');
+                    btn.classList.add('bg-red-50', 'text-red-600', 'pulse-ring');
+                    btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+                };
 
-        function toggleMic() {
-            if(config.isRecording) {
-                recognition.stop();
+                state.recognition.onend = () => {
+                    state.isListening = false;
+                    resetMicButton();
+                };
+
+                state.recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('userResponseInput').value = transcript;
+                    sendTextResponse(); // Auto send on speak
+                };
             } else {
-                recognition.start();
+                document.getElementById('micBtn').style.display = 'none';
+                console.warn("Speech Recognition not supported in this browser.");
             }
         }
 
-        recognition.onstart = () => {
-            config.isRecording = true;
-            const btn = document.getElementById('micBtn');
-            btn.classList.add('mic-active', 'bg-red-600', 'border-red-400');
-            btn.classList.remove('bg-slate-800');
-            document.getElementById('statusText').innerText = "Listening...";
-        };
-
-        recognition.onend = () => {
-            config.isRecording = false;
-            const btn = document.getElementById('micBtn');
-            btn.classList.remove('mic-active', 'bg-red-600', 'border-red-400');
-            btn.classList.add('bg-slate-800');
-            document.getElementById('statusText').innerText = "Processing voice...";
-        };
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            document.getElementById('userResponse').value = transcript;
-            sendMessage(); // Auto-send on voice end
-        };
-
-        function speak(text) {
-            if (synth.speaking) synth.cancel();
+        function toggleSpeech() {
+            if (!state.recognition) return;
             
-            // Clean text (remove asterisks etc used for markdown) for smoother speech
-            const cleanText = text.replace(/[*#]/g, ''); 
-            
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            
-            // Try to match language voice
-            const voices = synth.getVoices();
-            if(config.lang === 'hi-IN') {
-                const hindiVoice = voices.find(v => v.lang.includes('hi'));
-                if(hindiVoice) utterance.voice = hindiVoice;
+            // Set language dynamically
+            state.recognition.lang = state.language === 'Hindi' ? 'hi-IN' : 'en-US';
+
+            if (state.isListening) {
+                state.recognition.stop();
+            } else {
+                state.recognition.start();
             }
-            
-            utterance.lang = config.lang;
-            utterance.rate = 1;
-            synth.speak(utterance);
         }
 
+        function resetMicButton() {
+            const btn = document.getElementById('micBtn');
+            btn.classList.remove('bg-red-50', 'text-red-600', 'pulse-ring');
+            btn.innerHTML = '<i class="fa-solid fa-microphone text-xl"></i>';
+        }
+
+        function speakText(text) {
+            // Cancel any ongoing speech
+            state.synth.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = state.language === 'Hindi' ? 'hi-IN' : 'en-US';
+            utterance.rate = 1; // Normal speed
+            state.synth.speak(utterance);
+        }
+
+        function endSession() {
+            if(confirm("End the Viva session?")) {
+                location.reload();
+            }
+        }
     </script>
 </body>
 </html>
