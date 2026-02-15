@@ -3,522 +3,406 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Viva Master | Senior Dev Edition</title>
+    <title>YT Chat Hacker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom Scrollbar for Chat */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        
-        /* Pulse Animation for Mic */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-        .mic-active { animation: pulse-ring 2s infinite; }
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f0c29; }
+        
         /* Glassmorphism Utilities */
-        .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .glass-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        /* Ambient Background blobs */
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 300px; height: 300px; background: #764ba2; border-radius: 50%; }
+        .blob-2 { bottom: -10%; right: -10%; width: 250px; height: 250px; background: #667eea; border-radius: 50%; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .msg-anim { animation: fadeUp 0.3s ease-out forwards; }
+        
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white">
+<body class="text-white h-screen flex flex-col overflow-hidden relative">
 
-    <div class="min-h-screen flex flex-col items-center justify-start py-8 px-4 sm:px-6 lg:px-8">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <header class="glass h-16 flex items-center justify-between px-4 z-20 shrink-0">
+        <div class="flex items-center gap-2">
+            <i class="fa-brands fa-youtube text-red-500 text-xl"></i>
+            <h1 class="font-bold text-lg tracking-wide">Video<span class="text-blue-400">Chat</span></h1>
+        </div>
+        <button id="settingsBtn" class="text-gray-300 hover:text-white transition p-2">
+            <i class="fa-solid fa-gear text-lg"></i>
+        </button>
+    </header>
+
+    <main class="flex-1 overflow-hidden flex flex-col relative z-10">
         
-        <header class="w-full max-w-4xl flex justify-between items-center mb-8">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                </div>
-                <h1 class="text-2xl font-bold tracking-tight text-white">AI Viva Master</h1>
-            </div>
-            <button id="settingsBtn" class="p-2 rounded-full hover:bg-slate-700 transition-colors text-slate-400 hover:text-white" title="API Settings">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543 .826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            </button>
-        </header>
-
-        <main id="setupView" class="w-full max-w-3xl glass-panel rounded-2xl p-8 shadow-2xl transition-all duration-300">
-            <div class="space-y-6">
+        <div id="setupStage" class="flex-1 flex flex-col items-center justify-center p-6 text-center transition-all duration-300">
+            <div class="glass p-8 rounded-2xl w-full max-w-md shadow-2xl">
+                <i class="fa-solid fa-link text-4xl mb-4 text-blue-400"></i>
+                <h2 class="text-2xl font-bold mb-2">Load Video</h2>
+                <p class="text-gray-400 text-sm mb-6">Paste a YouTube URL to extract the "soul" of the video.</p>
                 
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">Select Language / भाषा चुनें</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button class="lang-btn active ring-2 ring-indigo-500 bg-slate-800 p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-700 transition-all" data-lang="en-US">
-                            <span class="text-2xl">🇬🇧</span> <span class="font-medium">English</span>
-                        </button>
-                        <button class="lang-btn bg-slate-800 p-4 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-700 transition-all" data-lang="hi-IN">
-                            <span class="text-2xl">🇮🇳</span> <span class="font-medium">Hindi (हिंदी)</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">Viva Topic / Subject</label>
-                    <input type="text" id="topicInput" placeholder="e.g., ReactJS Hooks, History of India, Quantum Physics..." 
-                        class="w-full bg-slate-800 border border-slate-700 text-white text-lg rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-500 transition-all">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">Examiner Mode</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="mode-card cursor-pointer bg-slate-800 border-2 border-transparent hover:bg-slate-750 rounded-xl p-4 transition-all" data-mode="friendly">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">😊</span>
-                                <div>
-                                    <h3 class="font-bold text-white">Friendly Tutor</h3>
-                                    <p class="text-xs text-slate-400">Easy questions, helpful hints.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mode-card cursor-pointer bg-slate-800 border-2 border-indigo-500 rounded-xl p-4 transition-all" data-mode="strict">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">😤</span>
-                                <div>
-                                    <h3 class="font-bold text-white">Strict Professor</h3>
-                                    <p class="text-xs text-slate-400">Hard questions, no mercy.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button id="startBtn" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl text-lg shadow-lg shadow-indigo-500/30 transform transition hover:-translate-y-0.5 active:translate-y-0">
-                    Start Viva Exam
+                <input type="text" id="urlInput" placeholder="https://youtube.com/..." 
+                    class="glass-input w-full p-3 rounded-lg mb-4 outline-none focus:border-blue-500 transition">
+                
+                <button id="loadBtn" class="glass-btn w-full py-3 rounded-lg font-bold tracking-wide hover:opacity-90 transition flex items-center justify-center gap-2">
+                    <span>Hack Transcript</span>
+                    <i class="fa-solid fa-bolt"></i>
                 </button>
             </div>
-        </main>
+        </div>
 
-        <main id="examView" class="hidden w-full max-w-4xl h-[80vh] flex flex-col gap-4">
+        <div id="chatStage" class="hidden flex-1 flex flex-col h-full w-full max-w-2xl mx-auto">
+            <div id="chatHistory" class="flex-1 overflow-y-auto p-4 space-y-4 pb-24">
+                <div class="text-center text-xs text-gray-500 mt-2">Session Started</div>
+                </div>
+
+            <div class="absolute bottom-0 left-0 w-full glass p-3 pb-6 md:pb-3">
+                <form id="chatForm" class="flex gap-2 max-w-2xl mx-auto">
+                    <input type="text" id="chatInput" placeholder="Ask about the video..." autocomplete="off"
+                        class="glass-input flex-1 p-3 rounded-full px-5 outline-none focus:border-blue-500 transition">
+                    <button type="submit" class="glass-btn w-12 h-12 rounded-full flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div id="loader" class="hidden absolute inset-0 bg-black/80 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
+            <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p id="loaderText" class="text-blue-300 font-mono text-sm animate-pulse">Initializing Interface...</p>
+        </div>
+    </main>
+
+    <div id="settingsModal" class="hidden absolute inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="glass p-6 rounded-xl w-full max-w-sm">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-key text-yellow-500"></i> API Setup
+            </h3>
+            <p class="text-xs text-gray-400 mb-4">
+                Enter your <a href="https://openrouter.ai" target="_blank" class="text-blue-400 underline">OpenRouter Key</a>. 
+                It is stored locally on your device.
+            </p>
+            <label class="block text-xs uppercase text-gray-500 font-bold mb-1">API Key</label>
+            <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." 
+                class="glass-input w-full p-2 rounded mb-4 outline-none">
             
-            <div class="glass-panel rounded-xl p-4 flex justify-between items-center">
-                <div>
-                    <h2 id="displayTopic" class="font-bold text-lg text-white">Topic</h2>
-                    <span id="displayMode" class="text-xs px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Mode</span>
-                </div>
-                <button id="endBtn" class="px-4 py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-sm transition-colors">
-                    End Exam
-                </button>
-            </div>
+            <label class="block text-xs uppercase text-gray-500 font-bold mb-1">Model ID</label>
+            <select id="modelSelect" class="glass-input w-full p-2 rounded mb-6 outline-none bg-gray-800">
+                <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash (Recommended)</option>
+                <option value="deepseek/deepseek-r1:free">DeepSeek R1 (Free)</option>
+                <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+            </select>
 
-            <div id="chatContainer" class="flex-1 glass-panel rounded-xl p-6 overflow-y-auto space-y-4">
-                <div class="flex justify-center">
-                    <span class="text-slate-500 text-sm animate-pulse">Initializing AI Examiner...</span>
-                </div>
-            </div>
-
-            <div class="glass-panel rounded-xl p-4 flex items-center gap-4">
-                <button id="micBtn" class="flex-shrink-0 w-16 h-16 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center border border-slate-600 transition-all group">
-                    <svg id="micIcon" class="w-8 h-8 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-                </button>
-                <div class="flex-1">
-                    <div id="statusText" class="text-slate-400 text-sm">Click mic to speak...</div>
-                    <div id="visualizer" class="h-1 w-full bg-slate-800 rounded mt-2 overflow-hidden">
-                        <div id="audioBar" class="h-full bg-indigo-500 w-0 transition-all duration-100"></div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-    </div>
-
-    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-md rounded-2xl p-6 transform transition-all scale-100">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                API Configuration
-            </h2>
-            <div class="mb-4">
-                <label class="block text-sm text-slate-400 mb-1">Google Gemini API Key</label>
-                <input type="password" id="apiKeyInput" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500" placeholder="AIzaSy...">
-                <p class="text-xs text-slate-500 mt-1">Key is stored locally in your browser.</p>
-            </div>
-            <div class="flex justify-end gap-3">
-                <button id="closeSettings" class="px-4 py-2 text-slate-300 hover:text-white">Cancel</button>
-                <button id="saveSettings" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Save Key</button>
+            <div class="flex gap-2">
+                <button id="saveSettings" class="glass-btn flex-1 py-2 rounded font-bold">Save</button>
+                <button id="closeSettings" class="bg-gray-700 hover:bg-gray-600 flex-1 py-2 rounded text-gray-300">Close</button>
             </div>
         </div>
     </div>
 
+    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-red-500/90 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden z-50 transition-all">
+        Error message here
+    </div>
+
     <script>
         /**
-         * AI Viva Master - Frontend Logic
+         * STATE MANAGEMENT
          */
-
-        // --- STATE MANAGEMENT ---
         const state = {
-            apiKey: localStorage.getItem('gemini_api_key') || '',
-            language: 'en-US', // 'en-US' or 'hi-IN'
-            mode: 'strict',    // 'strict' or 'friendly'
-            topic: '',
-            history: [],       // Conversation history for context
-            isListening: false,
-            isSpeaking: false
+            apiKey: localStorage.getItem('yt_chat_api_key') || '',
+            model: localStorage.getItem('yt_chat_model') || 'google/gemini-2.0-flash-001',
+            videoContext: '', // Stores the transcript
+            chatHistory: []
         };
 
-        // --- DOM ELEMENTS ---
+        /**
+         * DOM ELEMENTS
+         */
         const els = {
-            settingsBtn: document.getElementById('settingsBtn'),
+            setupStage: document.getElementById('setupStage'),
+            chatStage: document.getElementById('chatStage'),
+            urlInput: document.getElementById('urlInput'),
+            loadBtn: document.getElementById('loadBtn'),
+            chatHistory: document.getElementById('chatHistory'),
+            chatForm: document.getElementById('chatForm'),
+            chatInput: document.getElementById('chatInput'),
+            loader: document.getElementById('loader'),
+            loaderText: document.getElementById('loaderText'),
             settingsModal: document.getElementById('settingsModal'),
+            settingsBtn: document.getElementById('settingsBtn'),
             apiKeyInput: document.getElementById('apiKeyInput'),
+            modelSelect: document.getElementById('modelSelect'),
             saveSettings: document.getElementById('saveSettings'),
             closeSettings: document.getElementById('closeSettings'),
-            
-            setupView: document.getElementById('setupView'),
-            examView: document.getElementById('examView'),
-            
-            topicInput: document.getElementById('topicInput'),
-            startBtn: document.getElementById('startBtn'),
-            
-            langBtns: document.querySelectorAll('.lang-btn'),
-            modeCards: document.querySelectorAll('.mode-card'),
-            
-            chatContainer: document.getElementById('chatContainer'),
-            micBtn: document.getElementById('micBtn'),
-            micIcon: document.getElementById('micIcon'),
-            statusText: document.getElementById('statusText'),
-            audioBar: document.getElementById('audioBar'),
-            endBtn: document.getElementById('endBtn'),
-            
-            displayTopic: document.getElementById('displayTopic'),
-            displayMode: document.getElementById('displayMode')
+            toast: document.getElementById('toast')
         };
 
-        // --- SPEECH RECOGNITION SETUP ---
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = true;
-        } else {
-            alert("Speech Recognition API not supported in this browser. Please use Chrome/Edge.");
-        }
+        // Initialize Settings Inputs
+        els.apiKeyInput.value = state.apiKey;
+        els.modelSelect.value = state.model;
 
-        // --- SPEECH SYNTHESIS SETUP ---
-        const synth = window.speechSynthesis;
-        let voices = [];
-        
-        // Load voices (handles async loading in some browsers)
-        function loadVoices() {
-            voices = synth.getVoices();
-        }
-        loadVoices();
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
-
-        // --- EVENT LISTENERS ---
-
-        // Settings Modal
+        /**
+         * CORE LOGIC 1: SETTINGS & NAVIGATION
+         */
         els.settingsBtn.addEventListener('click', () => {
-            els.apiKeyInput.value = state.apiKey;
             els.settingsModal.classList.remove('hidden');
         });
 
-        els.closeSettings.addEventListener('click', () => els.settingsModal.classList.add('hidden'));
+        els.closeSettings.addEventListener('click', () => {
+            els.settingsModal.classList.add('hidden');
+        });
 
         els.saveSettings.addEventListener('click', () => {
             const key = els.apiKeyInput.value.trim();
-            if (key) {
-                state.apiKey = key;
-                localStorage.setItem('gemini_api_key', key);
-                els.settingsModal.classList.add('hidden');
-            } else {
-                alert("Please enter a valid API Key.");
+            const model = els.modelSelect.value;
+            
+            if (!key) {
+                showToast('API Key is required!');
+                return;
             }
+
+            state.apiKey = key;
+            state.model = model;
+            localStorage.setItem('yt_chat_api_key', key);
+            localStorage.setItem('yt_chat_model', model);
+            
+            els.settingsModal.classList.add('hidden');
+            showToast('Settings Saved', 'bg-green-500/90');
         });
 
-        // Language Switch
-        els.langBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                els.langBtns.forEach(b => {
-                    b.classList.remove('ring-2', 'ring-indigo-500');
-                    b.classList.add('bg-slate-800');
-                });
-                btn.classList.add('ring-2', 'ring-indigo-500');
-                state.language = btn.dataset.lang;
-            });
-        });
-
-        // Mode Switch
-        els.modeCards.forEach(card => {
-            card.addEventListener('click', () => {
-                els.modeCards.forEach(c => c.classList.remove('border-indigo-500'));
-                card.classList.add('border-indigo-500');
-                state.mode = card.dataset.mode;
-            });
-        });
-
-        // Start Exam Logic
-        els.startBtn.addEventListener('click', startExam);
-        els.endBtn.addEventListener('click', () => location.reload()); // Simple reset
-
-        // Mic Logic
-        els.micBtn.addEventListener('click', toggleMic);
-
-
-        // --- CORE FUNCTIONS ---
-
-        function startExam() {
-            // 1. Validate API Key
+        /**
+         * CORE LOGIC 2: FETCH TRANSCRIPT (JINA READER)
+         */
+        els.loadBtn.addEventListener('click', async () => {
+            const url = els.urlInput.value.trim();
+            
             if (!state.apiKey) {
-                alert("API Key is missing! Click the Gear icon ⚙️ to set it.");
-                els.settingsBtn.click();
+                showToast('Please set your OpenRouter API Key first (⚙️)');
+                els.settingsModal.classList.remove('hidden');
                 return;
             }
 
-            // 2. Validate Topic
-            const topicVal = els.topicInput.value.trim();
-            if (!topicVal) {
-                alert("Please enter a topic for the Viva.");
-                els.topicInput.focus();
+            if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+                showToast('Invalid YouTube URL');
                 return;
             }
-            state.topic = topicVal;
 
-            // 3. UI Transition
-            els.setupView.classList.add('hidden');
-            els.examView.classList.remove('hidden');
-            
-            els.displayTopic.textContent = state.topic;
-            els.displayMode.textContent = state.mode === 'strict' ? 'Strict Professor' : 'Friendly Tutor';
-            els.displayMode.className = `text-xs px-2 py-0.5 rounded border ${state.mode === 'strict' ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-green-500/20 text-green-300 border-green-500/30'}`;
-
-            // 4. Initial AI Prompt
-            initializeAI();
-        }
-
-        async function initializeAI() {
-            els.chatContainer.innerHTML = '';
-            
-            // Build system instruction based on Lang & Mode
-            const langInstruction = state.language === 'hi-IN' 
-                ? "You must speak and ask questions in Hindi (Devanagari script mixed with English terms if needed)." 
-                : "You must speak in English.";
-            
-            const modeInstruction = state.mode === 'strict'
-                ? "You are a Strict Professor. Be critical, concise, and professional. Do not give hints easily. If the answer is vague, grill the student."
-                : "You are a Friendly Tutor. Be encouraging, helpful, and polite. Keep questions simple initially.";
-
-            const initialPrompt = `
-                Act as an Oral Examiner (Viva Voce). 
-                Topic: "${state.topic}".
-                ${langInstruction}
-                ${modeInstruction}
-                Start by introducing yourself and asking the first fundamental question about the topic.
-                Keep your responses short (max 2-3 sentences) so the conversation flows naturally.
-            `;
-
-            addMessageToUI('system', "Connecting to Examiner...");
-            
-            // Call AI
-            const response = await callGeminiAPI(initialPrompt, true); // true = reset history
-            if(response) {
-                els.chatContainer.innerHTML = ''; // Clear loading
-                addMessageToUI('ai', response);
-                speakText(response);
-            }
-        }
-
-        function toggleMic() {
-            if (state.isListening) {
-                recognition.stop();
-            } else {
-                if(state.isSpeaking) {
-                    synth.cancel(); // Stop AI speaking if user wants to talk
-                    state.isSpeaking = false;
-                }
-                startListening();
-            }
-        }
-
-        function startListening() {
-            if(!recognition) return;
-            
-            recognition.lang = state.language;
-            recognition.start();
-            state.isListening = true;
-            
-            // UI Updates
-            els.micBtn.classList.add('bg-red-500', 'mic-active');
-            els.micBtn.classList.remove('bg-slate-800');
-            els.micIcon.classList.add('text-white');
-            els.statusText.textContent = state.language === 'hi-IN' ? "सुन रहा हूँ... (Listening)" : "Listening...";
-        }
-
-        // Recognition Events
-        if (recognition) {
-            recognition.onresult = (event) => {
-                const transcript = Array.from(event.results)
-                    .map(result => result[0])
-                    .map(result => result.transcript)
-                    .join('');
-
-                // Update visualizer width based on length (fake visual)
-                const len = Math.min(transcript.length * 2, 100);
-                els.audioBar.style.width = `${len}%`;
-
-                if (event.results[0].isFinal) {
-                    handleUserRefply(transcript);
-                }
-            };
-
-            recognition.onerror = (event) => {
-                console.error("Speech Error:", event.error);
-                els.statusText.textContent = "Error listening. Try again.";
-                resetMicUI();
-            };
-
-            recognition.onend = () => {
-                resetMicUI();
-            };
-        }
-
-        function resetMicUI() {
-            state.isListening = false;
-            els.micBtn.classList.remove('bg-red-500', 'mic-active');
-            els.micBtn.classList.add('bg-slate-800');
-            els.micIcon.classList.remove('text-white');
-            els.micIcon.classList.add('text-slate-400');
-            els.statusText.textContent = "Click mic to reply";
-            els.audioBar.style.width = '0%';
-        }
-
-        async function handleUserRefply(text) {
-            addMessageToUI('user', text);
-            
-            // Wait slightly for UI to update
-            els.statusText.textContent = "Examiner is thinking...";
-            
-            const response = await callGeminiAPI(text, false);
-            if(response) {
-                addMessageToUI('ai', response);
-                speakText(response);
-            }
-            els.statusText.textContent = "Click mic to reply";
-        }
-
-        // --- GEMINI API INTEGRATION ---
-        async function callGeminiAPI(prompt, isReset = false) {
-            if (isReset) state.history = [];
-            
-            // Add user prompt to history
-            state.history.push({ role: "user", parts: [{ text: prompt }] });
-
-            // Prepare Endpoint
-            const baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/";
-            const keyParam = `?key=${state.apiKey}`;
-            
-            // Try 2.5 Flash first
-            let model = "gemini-2.5-flash";
-            let url = `${baseUrl}${model}:generateContent${keyParam}`;
-            
-            const payload = {
-                contents: state.history,
-                generationConfig: {
-                    maxOutputTokens: 150, // Keep responses concise for voice
-                    temperature: 0.7
-                }
-            };
+            setLoading(true, 'Hacking Transcript via Jina...');
 
             try {
-                let response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                // The Jina Hack
+                const jinaUrl = `https://r.jina.ai/${url}`;
+                
+                const response = await fetch(jinaUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/plain',
+                        'X-No-Cache': 'true' // Attempt to bypass cache if needed
+                    }
                 });
 
-                // Fallback Logic
-                if (!response.ok) {
-                    console.warn(`Gemini 2.5 failed (${response.status}), falling back to 1.5-flash...`);
-                    model = "gemini-1.5-flash";
-                    url = `${baseUrl}${model}:generateContent${keyParam}`;
-                    response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                }
+                if (!response.ok) throw new Error('Failed to fetch transcript. Video might be unavailable.');
 
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.statusText}`);
-                }
+                let text = await response.text();
+                
+                // Cleanup Jina boilerplate (Optional but clean)
+                // Removes header info Jina sometimes adds to focus on content
+                const cleanText = text.replace(/Title:.*?\n/s, '').substring(0, 100000); // Limit chars to prevent massive context costs
 
-                const data = await response.json();
-                const aiText = data.candidates[0].content.parts[0].text;
+                if(cleanText.length < 50) throw new Error('No transcript found or video is empty.');
+
+                state.videoContext = cleanText;
                 
-                // Add AI response to history
-                state.history.push({ role: "model", parts: [{ text: aiText }] });
+                // Transition UI
+                els.setupStage.classList.add('hidden');
+                els.chatStage.classList.remove('hidden');
                 
-                return aiText;
+                // Add System Welcome
+                addMessage('assistant', `**Successfully Hacked.**\n\nI have read the transcript. Ask me anything about the video!`);
 
             } catch (error) {
                 console.error(error);
-                alert("Error connecting to AI. Please check your API Key.");
-                return null;
+                showToast(error.message || 'Fetch failed. Check URL or CORS.');
+            } finally {
+                setLoading(false);
             }
+        });
+
+        /**
+         * CORE LOGIC 3: CHAT & LLM
+         */
+        els.chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = els.chatInput.value.trim();
+            if (!query) return;
+
+            // UI Updates
+            els.chatInput.value = '';
+            addMessage('user', query);
+            
+            // Show Typing Indicator
+            const typingId = addTypingIndicator();
+            scrollToBottom();
+
+            try {
+                const response = await fetchOpenRouter(query);
+                removeMessage(typingId);
+                addMessage('assistant', response);
+            } catch (error) {
+                removeMessage(typingId);
+                addMessage('assistant', `**Error:** ${error.message}. Check your API Key or Quota.`);
+            }
+        });
+
+        async function fetchOpenRouter(userQuestion) {
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${state.apiKey}`,
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": window.location.href, // OpenRouter requirement
+                    "X-Title": "YT Chat Hacker"
+                },
+                body: JSON.stringify({
+                    model: state.model,
+                    messages: [
+                        {
+                            role: "system",
+                            content: `You are a helpful AI assistant. You have been provided with the transcript of a YouTube video below. Use this context to answer the user's questions strictly based on the video content. If the answer isn't in the transcript, say so.\n\n--- VIDEO TRANSCRIPT ---\n${state.videoContext}`
+                        },
+                        ...state.chatHistory.slice(-4), // Context window of last few chats
+                        {
+                            role: "user",
+                            content: userQuestion
+                        }
+                    ]
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error.message);
+            }
+            
+            return data.choices[0].message.content;
         }
 
-        // --- UI UTILS ---
-        function addMessageToUI(role, text) {
+        /**
+         * UI HELPERS
+         */
+        function addMessage(role, text) {
+            const isUser = role === 'user';
             const div = document.createElement('div');
-            const isAI = role === 'ai' || role === 'system';
-            
-            div.className = `flex ${isAI ? 'justify-start' : 'justify-end'}`;
-            
+            div.className = `flex w-full ${isUser ? 'justify-end' : 'justify-start'} msg-anim`;
+
             const bubble = document.createElement('div');
-            bubble.className = `max-w-[80%] rounded-2xl px-5 py-3 ${
-                isAI 
-                ? 'bg-slate-800 border border-slate-700 text-slate-200 rounded-tl-none' 
-                : 'bg-indigo-600 text-white rounded-tr-none'
+            bubble.className = `max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-md ${
+                isUser 
+                ? 'bg-blue-600 text-white rounded-br-sm' 
+                : 'glass text-gray-100 rounded-bl-sm border-none'
             }`;
-            
-            // Simple Formatting (Bold)
-            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            bubble.innerHTML = formattedText;
+
+            // Parse Markdown for AI, Plain text for User
+            bubble.innerHTML = isUser ? text : marked.parse(text);
 
             div.appendChild(bubble);
-            els.chatContainer.appendChild(div);
+            els.chatHistory.appendChild(div);
             
-            // Scroll to bottom
-            els.chatContainer.scrollTop = els.chatContainer.scrollHeight;
+            // Save to history state
+            state.chatHistory.push({ role, content: text });
+            
+            scrollToBottom();
+            return div.id = 'msg-' + Date.now();
         }
 
-        // --- TTS Logic ---
-        function speakText(text) {
-            if(!text) return;
-            state.isSpeaking = true;
-            
-            // Strip markdown stars for speech
-            const cleanText = text.replace(/\*/g, '');
-            
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            
-            // Select Voice based on Lang
-            let selectedVoice = null;
-            if (state.language === 'hi-IN') {
-                selectedVoice = voices.find(v => v.lang.includes('hi') || v.lang.includes('Hindi'));
+        function addTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'flex w-full justify-start msg-anim';
+            div.innerHTML = `
+                <div class="glass rounded-2xl p-4 rounded-bl-sm flex gap-1 items-center h-12">
+                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+                </div>
+            `;
+            els.chatHistory.appendChild(div);
+            return id;
+        }
+
+        function removeMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function scrollToBottom() {
+            els.chatHistory.scrollTop = els.chatHistory.scrollHeight;
+        }
+
+        function setLoading(isLoading, text) {
+            if (isLoading) {
+                els.loaderText.textContent = text;
+                els.loader.classList.remove('hidden');
             } else {
-                selectedVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices.find(v => v.lang === 'en-US');
+                els.loader.classList.add('hidden');
             }
-            
-            if (selectedVoice) utterance.voice = selectedVoice;
-            utterance.rate = 1;
-            utterance.pitch = 1;
+        }
 
-            utterance.onend = () => {
-                state.isSpeaking = false;
-            };
-
-            synth.speak(utterance);
+        function showToast(msg, bgClass = 'bg-red-500/90') {
+            els.toast.textContent = msg;
+            els.toast.className = `fixed top-20 left-1/2 transform -translate-x-1/2 ${bgClass} text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50 transition-all`;
+            els.toast.classList.remove('hidden');
+            setTimeout(() => {
+                els.toast.classList.add('hidden');
+            }, 3000);
         }
 
     </script>
