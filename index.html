@@ -1,257 +1,487 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#050505">
-  <title>NeonNoir Downloader</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <style>
-    body {
-      background-color: #050505;
-      background-image: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #050505 70%);
-      color: #e0e0e0;
-      font-family: system-ui, -apple-system, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    .neon-text {
-      color: #fff;
-      text-shadow: 0 0 5px #a855f7, 0 0 10px #a855f7, 0 0 20px #8b5cf6;
-    }
-    
-    .neon-input {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid #3b82f6;
-      box-shadow: 0 0 5px rgba(59, 130, 246, 0.3), inset 0 0 10px rgba(59, 130, 246, 0.1);
-      transition: all 0.3s ease;
-    }
-    
-    .neon-input:focus {
-      outline: none;
-      border-color: #a855f7;
-      box-shadow: 0 0 10px rgba(168, 85, 247, 0.6), inset 0 0 10px rgba(168, 85, 247, 0.2);
-    }
-    
-    .neon-btn {
-      background: linear-gradient(135deg, #7e22ce, #2563eb);
-      box-shadow: 0 0 15px rgba(126, 34, 206, 0.6), 0 0 30px rgba(37, 99, 235, 0.4);
-      transition: all 0.2s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 800;
-    }
-    
-    .neon-btn:active {
-      transform: scale(0.96);
-      box-shadow: 0 0 5px rgba(126, 34, 206, 0.8), 0 0 15px rgba(37, 99, 235, 0.6);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#22d3ee">
+    <meta name="description" content="Universal Ad-Free Video Downloader — Reels, Shorts, Tweets, Reddit">
+    <title>Ad-Free Downloader Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&amp;family=Inter:wght@400;500;600&amp;display=swap');
+        
+        :root {
+            --neon-cyan: #22d3ee;
+            --neon-purple: #c026d3;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .title-font {
+            font-family: 'Orbitron', sans-serif;
+        }
 
-    .glass-panel {
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-  </style>
+        .neon-cyan-glow {
+            text-shadow: 
+                0 0 10px #22d3ee,
+                0 0 20px #22d3ee,
+                0 0 40px #22d3ee;
+        }
 
-  <script>
-    const manifest = {
-      name: "NeonNoir Downloader",
-      short_name: "NeonNoir",
-      start_url: ".",
-      display: "standalone",
-      background_color: "#050505",
-      theme_color: "#8b5cf6",
-      icons: [{
-        src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzA1MDUwNSIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iNTAiIHI9IjM1IiBmaWxsPSJub25lIiBzdHJva2U9IiM4YjVjZjYiIHN0cm9rZS13aWR0aD0iOCIvPjwvc3ZnPg==",
-        sizes: "192x192",
-        type: "image/svg+xml"
-      }]
-    };
-    const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-    const manifestURL = URL.createObjectURL(manifestBlob);
-    document.write(`<link rel="manifest" href="${manifestURL}">`);
-  </script>
+        .neon-purple-glow {
+            text-shadow: 
+                0 0 10px #c026d3,
+                0 0 20px #c026d3,
+                0 0 40px #c026d3;
+        }
+
+        .glass {
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(16px);
+        }
+
+        .scanline {
+            position: relative;
+        }
+        
+        .scanline::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(34, 211, 238, 0.03) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 400px; }
+        }
+
+        .download-btn {
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 0 60px -10px rgb(34 211 238);
+        }
+    </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-between p-4">
-
-  <header class="w-full max-w-md pt-8 pb-4 text-center">
-    <h1 class="text-3xl font-black tracking-wider neon-text mb-2">NEONNOIR</h1>
-    <p class="text-blue-400 text-sm tracking-widest font-mono">UNIVERSAL DOWNLOADER</p>
-  </header>
-
-  <main class="w-full max-w-md flex flex-col gap-6 flex-grow justify-center relative z-10">
-    
-    <div class="glass-panel p-6 rounded-2xl flex flex-col gap-5 shadow-2xl">
-      <div class="flex flex-col gap-2">
-        <label for="urlInput" class="text-xs font-mono text-gray-400 uppercase tracking-wider ml-1">Target URL</label>
-        <input 
-          type="url" 
-          id="urlInput" 
-          placeholder="Paste Insta, TikTok, X, or Reddit link..." 
-          class="neon-input w-full p-4 rounded-xl text-white placeholder-gray-500 font-mono text-sm"
-          autocomplete="off"
-        >
-      </div>
-
-      <button 
-        id="downloadBtn" 
-        class="neon-btn w-full py-4 rounded-xl text-white text-lg flex items-center justify-center gap-2"
-        onclick="initiateDownload()"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-        </svg>
-        Download Now
-      </button>
-
-      <div id="statusArea" class="text-center min-h-[24px] font-mono text-sm transition-opacity duration-300 opacity-0">
+<body class="bg-zinc-950 text-white min-h-screen flex flex-col overflow-hidden">
+    <!-- HEADER -->
+    <header class="bg-zinc-900 border-b border-cyan-500/30 py-5 px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-br from-cyan-400 to-purple-500 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/50">
+                📥
+            </div>
+            <div>
+                <h1 class="title-font text-3xl font-black tracking-tighter neon-cyan-glow">DOWNLOADER</h1>
+                <p class="text-[10px] text-cyan-400/70 tracking-[3px] -mt-1">PRO v2.0</p>
+            </div>
         </div>
+        <div class="flex items-center gap-2 text-xs">
+            <div class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                LIVE
+            </div>
+            <button onclick="installPWA()" 
+                    class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-2xl text-sm flex items-center gap-2 transition-all">
+                <i class="fas fa-download"></i>
+                <span class="hidden sm:inline">Install App</span>
+            </button>
+        </div>
+    </header>
 
-      <div id="resultArea" class="hidden flex flex-col gap-3 mt-2 animate-pulse">
-        <a 
-          id="finalDownloadLink" 
-          href="#" 
-          target="_blank"
-          class="bg-green-500/20 border border-green-500 text-green-400 py-3 rounded-xl text-center font-bold tracking-wide hover:bg-green-500/30 transition-colors"
-          download
-        >
-          SAVE FILE TO DEVICE
-        </a>
-      </div>
+    <main class="flex-1 flex items-center justify-center p-5 scanline">
+        <div class="max-w-md w-full glass border border-zinc-700/70 rounded-3xl shadow-2xl shadow-purple-500/20 overflow-hidden">
+            
+            <!-- HERO -->
+            <div class="px-8 pt-8 pb-6 text-center border-b border-zinc-700/50">
+                <div class="inline-flex items-center gap-2 bg-zinc-900 border border-purple-500/30 rounded-full px-5 py-1.5 mb-4">
+                    <i class="fas fa-bolt text-amber-400"></i>
+                    <span class="text-xs font-medium tracking-widest text-purple-300">UNIVERSAL • AD-FREE • INSTANT</span>
+                </div>
+                <h2 class="text-4xl title-font font-black tracking-tighter neon-purple-glow">REELS • SHORTS • TWEETS • REDDIT</h2>
+                <p class="text-zinc-400 mt-2 text-sm">Paste any public video link. Get direct MP4.</p>
+            </div>
+
+            <!-- INPUT SECTION -->
+            <div class="p-8">
+                <div class="relative">
+                    <label class="block text-xs font-medium tracking-widest text-zinc-500 mb-3 pl-1">VIDEO URL</label>
+                    <div class="relative">
+                        <textarea id="urlInput" rows="3"
+                            class="w-full bg-zinc-950 border-2 border-zinc-700 focus:border-cyan-400 rounded-3xl px-6 py-5 text-white placeholder-zinc-500 resize-none focus:outline-none text-base"
+                            placeholder="https://www.instagram.com/reel/C...&#10;or https://x.com/user/status/..."></textarea>
+                        
+                        <!-- PASTE BUTTON -->
+                        <button onclick="pasteFromClipboard()" 
+                                class="absolute bottom-4 right-4 bg-zinc-800 hover:bg-zinc-700 text-cyan-400 px-4 py-2 rounded-2xl text-sm flex items-center gap-2 transition-all active:scale-95">
+                            <i class="fas fa-paste"></i>
+                            <span class="hidden sm:inline">Paste</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- FETCH BUTTON -->
+                <button onclick="fetchVideo()" id="fetchBtn"
+                        class="mt-8 w-full py-7 rounded-3xl bg-gradient-to-r from-cyan-500 via-purple-600 to-violet-500 text-xl font-bold tracking-wider flex items-center justify-center gap-4 shadow-[0_0_40px_-10px] shadow-cyan-400 hover:shadow-[0_0_60px_-5px] hover:shadow-purple-400 transition-all active:scale-[0.97]">
+                    <i id="fetchIcon" class="fas fa-magic text-2xl"></i>
+                    <span id="fetchText">FETCH VIDEO</span>
+                </button>
+
+                <!-- STATUS -->
+                <div id="status" class="min-h-[52px] mt-6 text-center text-sm font-medium flex items-center justify-center gap-3"></div>
+
+                <!-- RESULT -->
+                <div id="result" class="hidden mt-8">
+                    <div class="bg-zinc-900 border border-emerald-400/30 rounded-3xl p-6">
+                        <div class="flex items-center justify-center gap-3 text-emerald-400 mb-5">
+                            <i class="fas fa-check-circle text-3xl"></i>
+                            <span class="font-semibold tracking-wider text-lg">VIDEO READY</span>
+                        </div>
+                        
+                        <!-- Download Button -->
+                        <a id="downloadBtn" href="#" target="_blank"
+                           class="download-btn group block w-full py-8 text-3xl font-black bg-gradient-to-br from-emerald-500 to-cyan-400 rounded-3xl text-center shadow-2xl shadow-emerald-500/50 flex items-center justify-center gap-4 hover:from-emerald-400 hover:to-cyan-300">
+                            <i class="fas fa-download group-active:rotate-12 transition-transform"></i>
+                            DOWNLOAD MP4
+                        </a>
+
+                        <!-- Copy Link -->
+                        <button onclick="copyDownloadLink()" 
+                                class="mt-4 w-full py-4 text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-400 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium transition-all">
+                            <i class="fas fa-link"></i>
+                            COPY DIRECT LINK
+                        </button>
+                    </div>
+
+                    <!-- New Fetch -->
+                    <button onclick="resetUI()" 
+                            class="mt-6 w-full py-4 text-zinc-400 hover:text-cyan-400 transition-colors text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-redo"></i>
+                        FETCH ANOTHER VIDEO
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="py-6 px-6 text-center text-xs text-zinc-500 border-t border-zinc-800">
+        <div class="flex justify-center gap-6">
+            <span class="flex items-center gap-1"><i class="fas fa-shield-alt"></i> No Ads</span>
+            <span class="flex items-center gap-1"><i class="fas fa-lock"></i> Private</span>
+            <span class="flex items-center gap-1"><i class="fas fa-bolt"></i> Instant</span>
+        </div>
+        <p class="mt-4 text-[10px]">Powered by Cobalt.tools • CORS Bypass • Made for mobile browsers</p>
+        <p class="mt-1 text-[10px]">Public videos only • Respect copyright</p>
+    </footer>
+
+    <!-- PWA Install Toast -->
+    <div id="installToast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 border border-cyan-400/30 rounded-3xl shadow-2xl px-6 py-4 flex items-center gap-4 max-w-[320px]">
+        <div class="flex-1">
+            <p class="text-sm font-medium">Install as PWA for offline access</p>
+        </div>
+        <button onclick="installPWA(); hideToast()" 
+                class="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold px-6 py-2 rounded-2xl text-sm transition-all">
+            Install
+        </button>
     </div>
-    
-    <button id="installAppBtn" class="hidden mx-auto border border-purple-500 text-purple-400 text-xs font-mono py-2 px-4 rounded-full hover:bg-purple-900/30 transition-colors">
-      [ INSTALL APP TO HOMESCREEN ]
-    </button>
-  </main>
 
-  <footer class="w-full max-w-md pb-6 text-center">
-    <p class="text-gray-500 text-xs font-mono tracking-widest uppercase">
-      100% Ad-Free • Private • Secure
-    </p>
-  </footer>
-
-  <script>
-    // Note: co.wuk.sh is used as requested, but api.cobalt.tools is the primary fallback for the Cobalt ecosystem.
-    const COBALT_API_URL = 'https://co.wuk.sh/api/json'; 
-    const FALLBACK_API_URL = 'https://api.cobalt.tools/api/json';
-
-    const urlInput = document.getElementById('urlInput');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const statusArea = document.getElementById('statusArea');
-    const resultArea = document.getElementById('resultArea');
-    const finalDownloadLink = document.getElementById('finalDownloadLink');
-    const installAppBtn = document.getElementById('installAppBtn');
-
-    function updateStatus(message, colorClass) {
-      statusArea.className = `text-center min-h-[24px] font-mono text-sm transition-opacity duration-300 opacity-100 ${colorClass}`;
-      statusArea.textContent = message;
-    }
-
-    async function initiateDownload() {
-      const targetUrl = urlInput.value.trim();
-      
-      if (!targetUrl) {
-        updateStatus('> ERROR: Input payload is empty.', 'text-red-500');
-        return;
-      }
-
-      // Basic URL validation
-      try {
-        new URL(targetUrl);
-      } catch (e) {
-        updateStatus('> ERROR: Invalid URL format.', 'text-red-500');
-        return;
-      }
-
-      // Reset UI state
-      resultArea.classList.add('hidden');
-      downloadBtn.disabled = true;
-      downloadBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      downloadBtn.innerHTML = `
-        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg> Processing...
-      `;
-      updateStatus('> Initiating connection sequence...', 'text-blue-400');
-
-      try {
-        // Attempt Primary API Request
-        let response = await fetch(COBALT_API_URL, {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ url: targetUrl })
-        }).catch(() => null); // Catch network errors to trigger fallback
-
-        // Fallback to official api.cobalt.tools instance if co.wuk.sh fails
-        if (!response || !response.ok) {
-           updateStatus('> Rerouting to fallback instance...', 'text-purple-400');
-           response = await fetch(FALLBACK_API_URL, {
-            method: 'POST',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ url: targetUrl })
-          });
+    <script>
+        // Tailwind config
+        function initTailwind() {
+            tailwind.config = {
+                content: [],
+                theme: {
+                    extend: {}
+                }
+            }
         }
 
-        if (!response.ok) {
-          throw new Error(`Server returned status: ${response.status}`);
+        // Manifest for PWA
+        function setupManifest() {
+            const manifest = {
+                "name": "Ad-Free Downloader Pro",
+                "short_name": "VideoDL Pro",
+                "description": "Download Instagram Reels, Twitter/X, YouTube Shorts, Reddit videos instantly - completely ad-free",
+                "start_url": ".",
+                "display": "standalone",
+                "background_color": "#09090b",
+                "theme_color": "#22d3ee",
+                "orientation": "portrait-primary",
+                "icons": [
+                    {
+                        "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%23c026d3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='40' fill='%23090a0b'/%3E%3Cpath d='M60 80 Q100 40 140 80 L140 130 Q100 170 60 130 Z' fill='url(%23g)'/%3E%3Ccircle cx='100' cy='105' r='18' fill='%23090a0b'/%3E%3Cpath d='M85 95 L115 115 M115 95 L85 115' stroke='%23090a0b' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E",
+                        "sizes": "192x192",
+                        "type": "image/svg+xml"
+                    },
+                    {
+                        "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2322d3ee'/%3E%3Cstop offset='100%25' stop-color='%23c026d3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='200' height='200' rx='40' fill='%23090a0b'/%3E%3Cpath d='M60 80 Q100 40 140 80 L140 130 Q100 170 60 130 Z' fill='url(%23g)'/%3E%3Ccircle cx='100' cy='105' r='18' fill='%23090a0b'/%3E%3Cpath d='M85 95 L115 115 M115 95 L85 115' stroke='%23090a0b' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E",
+                        "sizes": "512x512",
+                        "type": "image/svg+xml"
+                    }
+                ]
+            };
+
+            const manifestStr = JSON.stringify(manifest);
+            const blob = new Blob([manifestStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            let link = document.getElementById('manifestLink');
+            if (!link) {
+                link = document.createElement('link');
+                link.id = 'manifestLink';
+                link.rel = 'manifest';
+                document.head.appendChild(link);
+            }
+            link.href = url;
         }
 
-        const data = await response.json();
-
-        if (data.status === 'error') {
-          updateStatus(`> SERVER ERROR: ${data.text || 'Failed to process video'}`, 'text-red-500');
-        } else if (data.url) {
-          updateStatus('> SUCCESS: Media decrypted.', 'text-green-400');
-          finalDownloadLink.href = data.url;
-          resultArea.classList.remove('hidden');
-        } else {
-          updateStatus('> ERROR: Unexpected response signature.', 'text-red-500');
+        // Service Worker for PWA
+        async function registerSW() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const swScript = `
+                        const CACHE_NAME = 'videodl-pro-v1';
+                        self.addEventListener('install', event => {
+                            event.waitUntil(
+                                caches.open(CACHE_NAME).then(cache => {
+                                    return cache.addAll([
+                                        './',
+                                        'index.html'
+                                    ]);
+                                })
+                            );
+                        });
+                        self.addEventListener('fetch', event => {
+                            event.respondWith(
+                                caches.match(event.request).then(response => {
+                                    return response || fetch(event.request);
+                                })
+                            );
+                        });
+                    `;
+                    
+                    const blob = new Blob([swScript], { type: 'text/javascript' });
+                    const swURL = URL.createObjectURL(blob);
+                    
+                    await navigator.serviceWorker.register(swURL);
+                } catch (e) {}
+            }
         }
 
-      } catch (error) {
-        console.error(error);
-        updateStatus('> CONNECTION FAILED: Check URL or try again later.', 'text-red-500');
-      } finally {
-        // Restore Button State
-        downloadBtn.disabled = false;
-        downloadBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        downloadBtn.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg> Download Now
-        `;
-      }
-    }
+        let deferredPrompt = null;
+        let currentDownloadUrl = '';
 
-    // PWA Installation Logic
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installAppBtn.classList.remove('hidden');
-    });
-
-    installAppBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          installAppBtn.classList.add('hidden');
+        function setupInstallPrompt() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                document.getElementById('installToast').classList.remove('hidden');
+            });
         }
-        deferredPrompt = null;
-      }
-    });
-  </script>
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                });
+            } else {
+                alert("Tap the browser menu → 'Add to Home Screen' to install this PWA");
+            }
+        }
+
+        function hideToast() {
+            document.getElementById('installToast').classList.add('hidden');
+        }
+
+        // Paste from clipboard
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text.startsWith('http')) {
+                    document.getElementById('urlInput').value = text.trim();
+                    document.getElementById('urlInput').focus();
+                }
+            } catch (err) {
+                alert("Clipboard access denied. Please paste manually.");
+            }
+        }
+
+        // Copy download link
+        function copyDownloadLink() {
+            if (!currentDownloadUrl) return;
+            navigator.clipboard.writeText(currentDownloadUrl).then(() => {
+                const orig = event.target.innerHTML;
+                event.target.innerHTML = `<i class="fas fa-check text-emerald-400"></i> COPIED!`;
+                setTimeout(() => {
+                    event.target.innerHTML = orig;
+                }, 1800);
+            });
+        }
+
+        // Main fetch function
+        async function fetchVideo() {
+            const urlInput = document.getElementById('urlInput');
+            const userUrl = urlInput.value.trim();
+            
+            if (!userUrl) {
+                showStatus('❌ Please paste a valid video URL', 'text-red-400');
+                return;
+            }
+
+            if (!userUrl.startsWith('http')) {
+                showStatus('❌ URL must start with http', 'text-red-400');
+                return;
+            }
+
+            const fetchBtn = document.getElementById('fetchBtn');
+            const fetchText = document.getElementById('fetchText');
+            const fetchIcon = document.getElementById('fetchIcon');
+            
+            // Loading state
+            fetchBtn.disabled = true;
+            fetchBtn.classList.add('opacity-75');
+            fetchIcon.classList.remove('fa-magic');
+            fetchIcon.classList.add('fa-spinner', 'fa-spin');
+            fetchText.textContent = 'BYPASSING...';
+
+            showStatus('🔓 Connecting to Cobalt API...', 'text-amber-400');
+
+            try {
+                const proxyUrl = 'https://corsproxy.io/?https://api.cobalt.tools/api/json';
+                
+                const response = await fetch(proxyUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        url: userUrl
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network error');
+                }
+
+                const data = await response.json();
+
+                // Status update - extracting
+                showStatus('📥 Extracting direct MP4 link...', 'text-cyan-400');
+
+                // Small delay for UX
+                await new Promise(r => setTimeout(r, 650));
+
+                // Handle response (as per Cobalt format + prompt)
+                let downloadUrl = null;
+                
+                if (data.url) {
+                    downloadUrl = data.url;
+                } else if (data.data && data.data.url) {
+                    downloadUrl = data.data.url;
+                } else if (data.picker && data.picker.length > 0) {
+                    // Fallback to first video quality
+                    const videoOption = data.picker.find(p => p.type === 'video' || p.url.endsWith('.mp4'));
+                    if (videoOption) downloadUrl = videoOption.url;
+                }
+
+                if (downloadUrl) {
+                    currentDownloadUrl = downloadUrl;
+                    
+                    // Show result
+                    document.getElementById('result').classList.remove('hidden');
+                    document.getElementById('downloadBtn').href = downloadUrl;
+                    
+                    showStatus('✅ Success! Tap below to download', 'text-emerald-400');
+                    
+                    // Reset button
+                    fetchBtn.disabled = false;
+                    fetchBtn.classList.remove('opacity-75');
+                    fetchIcon.classList.remove('fa-spinner', 'fa-spin');
+                    fetchIcon.classList.add('fa-magic');
+                    fetchText.textContent = 'FETCH ANOTHER';
+                } else {
+                    throw new Error(data.text || 'No video found');
+                }
+
+            } catch (error) {
+                console.error(error);
+                let msg = 'Error: Ensure the video is public and try again.';
+                if (error.message.includes('Failed to fetch')) {
+                    msg = '⚠️ Connection issue. Try again.';
+                }
+                showStatus(msg, 'text-red-400');
+                
+                // Reset button
+                fetchBtn.disabled = false;
+                fetchBtn.classList.remove('opacity-75');
+                fetchIcon.classList.remove('fa-spinner', 'fa-spin');
+                fetchIcon.classList.add('fa-magic');
+                fetchText.textContent = 'TRY AGAIN';
+            }
+        }
+
+        function showStatus(html, colorClass) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `min-h-[52px] mt-6 text-center text-sm font-medium flex items-center justify-center gap-3 ${colorClass}`;
+            statusEl.innerHTML = html;
+        }
+
+        function resetUI() {
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('urlInput').value = '';
+            document.getElementById('status').innerHTML = '';
+            const fetchBtn = document.getElementById('fetchBtn');
+            fetchBtn.disabled = false;
+            const fetchText = document.getElementById('fetchText');
+            fetchText.textContent = 'FETCH VIDEO';
+            const fetchIcon = document.getElementById('fetchIcon');
+            fetchIcon.classList.remove('fa-spinner', 'fa-spin');
+            fetchIcon.classList.add('fa-magic');
+        }
+
+        // Keyboard support
+        function setupKeyboard() {
+            document.getElementById('urlInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !document.getElementById('fetchBtn').disabled) {
+                    fetchVideo();
+                }
+            });
+        }
+
+        // Initialize everything
+        window.onload = function() {
+            initTailwind();
+            setupManifest();
+            registerSW();
+            setupInstallPrompt();
+            setupKeyboard();
+            
+            // Welcome status
+            setTimeout(() => {
+                showStatus('Ready • Paste any public video link', 'text-zinc-400');
+            }, 800);
+            
+            // Demo URL
+            // document.getElementById('urlInput').value = "https://www.instagram.com/reel/C8z5kJqR5vK/";
+        };
+    </script>
 </body>
 </html>
