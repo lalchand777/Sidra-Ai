@@ -2,198 +2,219 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#030712">
-    <title>Magic Eraser Pro (Offline AI)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google AI BG Remover (Offline)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <script src="https://unpkg.com/@imgly/background-removal@1.2.0/dist/browser/imglyRemoveBackground.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
     
     <style>
         body { 
-            background-color: #030712; 
+            background-color: #050505; 
+            background-image: radial-gradient(circle at 50% 0%, #111827 0%, #050505 70%);
         }
         
-        /* Cyberpunk Neon Effects */
-        .cyber-glow-purple { 
-            box-shadow: 0 0 15px rgba(168,85,247,0.4), inset 0 0 10px rgba(168,85,247,0.1); 
-            border-color: #a855f7; 
-        }
-        .cyber-glow-green { 
-            box-shadow: 0 0 15px rgba(34,197,94,0.5), inset 0 0 10px rgba(34,197,94,0.2); 
-            border-color: #22c55e; 
-        }
-        .cyber-text-purple { 
-            text-shadow: 0 0 8px rgba(168,85,247,0.8); 
-        }
-        .cyber-text-green { 
-            text-shadow: 0 0 8px rgba(34,197,94,0.8); 
-        }
-        
-        /* Spinner */
-        .loader {
-            border-top-color: #a855f7;
-            -webkit-animation: spinner 1.5s linear infinite;
-            animation: spinner 1.5s linear infinite;
-        }
-        @keyframes spinner {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .cyber-panel {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 
+                        inset 0 0 15px rgba(56, 189, 248, 0.05);
         }
 
-        /* Checkerboard background for transparent results */
-        .bg-checkerboard {
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAAXNSR0IArs4c6QAAACVJREFUKFNjZCASMDKgAnv37v3PwsLCiC6FzRCRJmEaGfBpwLQPAJpVB0C1G+T3AAAAAElFTkSuQmCC');
+        .neon-text { 
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.8),
+                         0 0 20px rgba(56, 189, 248, 0.4); 
         }
+
+        .neon-button {
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .neon-button:hover:not(:disabled) {
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .neon-button:disabled {
+            box-shadow: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .checkerboard-bg {
+            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), 
+                              linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #1e293b 75%), 
+                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            background-color: #0f172a;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center p-4 font-sans text-gray-200">
+<body class="text-white min-h-screen flex items-center justify-center p-4 font-sans antialiased">
+    
+    <div class="max-w-md w-full cyber-panel rounded-2xl p-6 flex flex-col gap-6 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-sky-500 rounded-full mix-blend-screen filter blur-[50px] opacity-20 pointer-events-none"></div>
 
-    <main class="w-full max-w-md mx-auto space-y-6">
-        
-        <header class="text-center mt-4 mb-8">
-            <h1 class="text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-green-400 cyber-text-purple uppercase">
-                Magic Eraser Pro
+        <div class="text-center">
+            <h1 class="text-2xl md:text-3xl font-black text-sky-400 neon-text tracking-wider uppercase">
+                Google AI
             </h1>
-            <p class="text-[10px] font-mono text-purple-300 mt-2 tracking-widest">[ OFFLINE AI ENGINE ]</p>
-        </header>
+            <h2 class="text-lg font-bold text-gray-300 tracking-wide mt-1">
+                BG Remover <span class="text-xs font-normal text-sky-500 border border-sky-500/50 rounded-full px-2 py-0.5 ml-1">Offline</span>
+            </h2>
+        </div>
 
-        <label class="relative block w-full border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 hover:bg-gray-900 cyber-glow-purple bg-gray-900/50" id="drop-zone">
-            <input type="file" id="file-input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-            <div class="space-y-3 pointer-events-none">
-                <svg class="mx-auto h-12 w-12 text-purple-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                <p class="text-sm font-medium text-gray-300">Tap to upload image</p>
-                <p class="text-xs text-gray-500">JPG, PNG, WEBP</p>
-            </div>
+        <label for="imageUpload" class="group cursor-pointer flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-sky-500/50 rounded-xl hover:border-sky-400 hover:bg-sky-900/10 transition-all duration-300 relative overflow-hidden">
+            <div class="absolute inset-0 bg-sky-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <svg class="w-10 h-10 text-sky-400 mb-3 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            <span id="uploadText" class="text-sm text-sky-200 font-medium px-4 text-center truncate w-full">Tap to browse or drop an image</span>
+            <input type="file" id="imageUpload" accept="image/*" class="hidden" />
         </label>
 
-        <div id="preview-container" class="hidden space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-                
-                <div class="flex flex-col space-y-2">
-                    <span class="text-[10px] font-mono text-gray-400 text-center uppercase tracking-wider">Before</span>
-                    <div class="aspect-square rounded-lg overflow-hidden border border-gray-700 bg-gray-800 flex items-center justify-center">
-                        <img id="original-preview" class="object-cover w-full h-full" alt="Original preview">
-                    </div>
-                </div>
+        <img id="sourceImage" class="hidden" alt="Source">
 
-                <div class="flex flex-col space-y-2">
-                    <span class="text-[10px] font-mono text-gray-400 text-center uppercase tracking-wider">After</span>
-                    <div class="aspect-square rounded-lg overflow-hidden border border-gray-700 bg-checkerboard flex items-center justify-center relative">
-                        <img id="result-preview" class="object-contain w-full h-full hidden z-10" alt="Result preview">
-                        
-                        <div id="loading-spinner" class="hidden absolute inset-0 z-20 bg-gray-950/80 flex items-center justify-center flex-col backdrop-blur-sm">
-                            <div class="loader border-4 border-gray-700 rounded-full w-10 h-10 mb-2"></div>
-                        </div>
-                    </div>
-                </div>
+        <button id="processBtn" disabled class="neon-button bg-sky-600 hover:bg-sky-500 text-white font-bold py-3.5 px-4 rounded-xl w-full flex items-center justify-center gap-2 uppercase tracking-wide text-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+            </svg>
+            <span>Remove Background 🪄</span>
+        </button>
 
+        <div class="h-6 flex items-center justify-center">
+            <p id="statusText" class="text-xs text-sky-300 font-medium tracking-wide animate-pulse"></p>
+        </div>
+
+        <div id="resultContainer" class="hidden flex-col gap-4 animate-fade-in">
+            <div class="rounded-xl overflow-hidden border border-sky-500/30 checkerboard-bg relative group">
+                <canvas id="outputCanvas" class="w-full h-auto block max-h-[400px] object-contain"></canvas>
             </div>
-        </div>
-
-        <div id="status-container" class="hidden text-center p-3 rounded-lg bg-gray-900/80 border border-gray-800">
-            <p id="status-text" class="text-xs font-mono text-purple-300 animate-pulse"></p>
-        </div>
-
-        <div class="space-y-4 pt-2 pb-8">
-            <button id="remove-btn" class="w-full py-4 px-6 rounded-lg font-bold text-black bg-green-400 transition-all cyber-glow-green hover:bg-green-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none hidden flex items-center justify-center space-x-2">
-                <span>Remove Background 🪄</span>
-            </button>
             
-            <a id="download-btn" class="w-full py-4 px-6 rounded-lg font-bold text-white bg-purple-600 transition-all cyber-glow-purple hover:bg-purple-500 hidden flex items-center justify-center space-x-2 text-center" download="magic_eraser_pro.png">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                <span>Download HD</span>
-            </a>
+            <button id="downloadBtn" class="bg-gray-800 hover:bg-gray-700 border border-sky-500/50 hover:border-sky-400 text-sky-400 font-bold py-3 px-4 rounded-xl w-full transition-all duration-300 flex items-center justify-center gap-2 group">
+                <svg class="w-5 h-5 group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Download HD PNG
+            </button>
         </div>
-        
-    </main>
+    </div>
 
     <script>
-        const fileInput = document.getElementById('file-input');
-        const previewContainer = document.getElementById('preview-container');
-        const originalPreview = document.getElementById('original-preview');
-        const resultPreview = document.getElementById('result-preview');
-        const removeBtn = document.getElementById('remove-btn');
-        const downloadBtn = document.getElementById('download-btn');
-        const statusContainer = document.getElementById('status-container');
-        const statusText = document.getElementById('status-text');
-        const loadingSpinner = document.getElementById('loading-spinner');
+        const imageUpload = document.getElementById('imageUpload');
+        const sourceImage = document.getElementById('sourceImage');
+        const processBtn = document.getElementById('processBtn');
+        const statusText = document.getElementById('statusText');
+        const resultContainer = document.getElementById('resultContainer');
+        const outputCanvas = document.getElementById('outputCanvas');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const uploadText = document.getElementById('uploadText');
+        const ctx = outputCanvas.getContext('2d', { willReadFrequently: true });
 
-        let currentFile = null;
-
-        // Handle Image Upload
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                currentFile = e.target.files[0];
-                
-                // Reset UI states
-                resultPreview.classList.add('hidden');
-                resultPreview.src = '';
-                downloadBtn.classList.add('hidden');
-                statusContainer.classList.add('hidden');
-                
-                // Show original image
-                const objectUrl = URL.createObjectURL(currentFile);
-                originalPreview.src = objectUrl;
-                
-                // Reveal components
-                previewContainer.classList.remove('hidden');
-                removeBtn.classList.remove('hidden');
-                removeBtn.disabled = false;
+        // Initialize MediaPipe Selfie Segmentation
+        const selfieSegmentation = new SelfieSegmentation({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
             }
         });
 
-        // Handle AI Background Removal
-        removeBtn.addEventListener('click', async () => {
-            if (!currentFile) return;
+        // Model Selection: 1 is general use, 0 is landscape. 
+        selfieSegmentation.setOptions({ modelSelection: 1 });
+        selfieSegmentation.onResults(onResults);
 
-            // Trigger Loading UI
-            removeBtn.disabled = true;
-            loadingSpinner.classList.remove('hidden');
-            resultPreview.classList.add('hidden');
-            downloadBtn.classList.add('hidden');
+        // Core processing callback
+        function onResults(results) {
+            // Match canvas dimensions to original image for HD output
+            outputCanvas.width = sourceImage.naturalWidth;
+            outputCanvas.height = sourceImage.naturalHeight;
+
+            ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+
+            // 1. Draw original image
+            ctx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
+
+            // 2. Apply masking technique (keep pixels where mask is drawn)
+            ctx.globalCompositeOperation = 'destination-in';
             
-            statusContainer.classList.remove('hidden');
-            statusText.textContent = "Loading AI Model... (May take 10-20 seconds the first time)";
-            statusText.className = "text-xs font-mono animate-pulse cyber-text-purple text-purple-400";
+            // 3. Draw the segmentation mask
+            ctx.drawImage(results.segmentationMask, 0, 0, outputCanvas.width, outputCanvas.height);
 
-            try {
-                // CORE LOGIC 
-                const config = {
-                    publicPath: "https://unpkg.com/@imgly/background-removal@1.2.0/dist/"
+            // Reset composite operation
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Update UI
+            statusText.textContent = "Extraction complete! ✨";
+            processBtn.disabled = false;
+            processBtn.innerHTML = `<span>Process Another Image 🪄</span>`;
+            
+            resultContainer.classList.remove('hidden');
+            resultContainer.classList.add('flex');
+            
+            // Scroll to bottom smoothly
+            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Handle Image Upload File Selection
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            uploadText.textContent = file.name;
+            statusText.textContent = "Image loaded. Ready to extract.";
+            
+            // Hide previous results
+            resultContainer.classList.add('hidden');
+            resultContainer.classList.remove('flex');
+            
+            // Read file as Data URL to avoid CORS
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                sourceImage.src = event.target.result;
+                sourceImage.onload = () => {
+                    processBtn.disabled = false;
+                    processBtn.innerHTML = `<span>Remove Background 🪄</span>`;
                 };
-                
-                // Update status when processing begins
-                setTimeout(() => {
-                    if (loadingSpinner.classList.contains('hidden')) return;
-                    statusText.textContent = "Processing Image... AI is executing 🧠";
-                }, 3000); // Slight delay to give illusion of model load vs processing
+            };
+            reader.readAsDataURL(file);
+        });
 
-                const imageBlob = await imglyRemoveBackground(currentFile, config);
-                const url = URL.createObjectURL(imageBlob);
-                
-                // Success UI Update
-                resultPreview.src = url;
-                resultPreview.classList.remove('hidden');
-                
-                downloadBtn.href = url;
-                downloadBtn.download = `magic-eraser-${Date.now()}.png`;
-                downloadBtn.classList.remove('hidden');
-                
-                statusText.textContent = "Background removed successfully! ✨";
-                statusText.className = "text-xs font-mono cyber-text-green text-green-400";
-
+        // Handle Execution
+        processBtn.addEventListener('click', async () => {
+            processBtn.disabled = true;
+            statusText.textContent = "Neural Network processing... (First time takes longer)";
+            
+            try {
+                // Pass the hidden HTMLImageElement directly to MediaPipe
+                await selfieSegmentation.send({ image: sourceImage });
             } catch (error) {
-                console.error("AI Error:", error);
-                statusText.textContent = "Error: System failure. Try a different image.";
-                statusText.className = "text-xs font-mono text-red-500";
-            } finally {
-                loadingSpinner.classList.add('hidden');
-                removeBtn.disabled = false;
+                console.error("Segmentation Error:", error);
+                statusText.textContent = "Error occurred. Try a different image.";
+                processBtn.disabled = false;
             }
+        });
+
+        // Handle High-Res Download
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `AI-Bg-Removed-${Date.now()}.png`;
+            // Export canvas at full resolution
+            link.href = outputCanvas.toDataURL('image/png', 1.0);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         });
     </script>
 </body>
