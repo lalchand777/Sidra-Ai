@@ -1,221 +1,1006 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google AI BG Remover (Offline)</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
-    
-    <style>
-        body { 
-            background-color: #050505; 
-            background-image: radial-gradient(circle at 50% 0%, #111827 0%, #050505 70%);
-        }
-        
-        .cyber-panel {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 
-                        inset 0 0 15px rgba(56, 189, 248, 0.05);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dolphin AI — Uncensored Chat</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <style>
+    /* ── Reset & Variables ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .neon-text { 
-            text-shadow: 0 0 10px rgba(56, 189, 248, 0.8),
-                         0 0 20px rgba(56, 189, 248, 0.4); 
-        }
+    :root {
+      --bg:         #0d0e11;
+      --sidebar-bg: #111318;
+      --chat-bg:    #161820;
+      --user-bubble:#1e3a5f;
+      --ai-bubble:  #1a1d24;
+      --border:     #2a2d36;
+      --accent:     #00c8ff;
+      --accent2:    #0097c7;
+      --text:       #e2e4ec;
+      --muted:      #7a7f94;
+      --danger:     #ff4f6a;
+      --code-bg:    #0b0d10;
+      --radius:     12px;
+      --font-main:  'Segoe UI', system-ui, sans-serif;
+    }
 
-        .neon-button {
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    html, body { height: 100%; overflow: hidden; }
 
-        .neon-button:hover:not(:disabled) {
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.9);
-            transform: translateY(-2px);
-        }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
 
-        .neon-button:disabled {
-            box-shadow: none;
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 58px;
+      background: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
 
-        .checkerboard-bg {
-            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%), 
-                              linear-gradient(-45deg, #1e293b 25%, transparent 25%), 
-                              linear-gradient(45deg, transparent 75%, #1e293b 75%), 
-                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-            background-color: #0f172a;
-        }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: #38bdf8; border-radius: 4px; }
-    </style>
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #005f80, #00c8ff);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .logo-text span {
+      color: var(--accent);
+    }
+
+    .badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      background: rgba(0,200,255,0.12);
+      border: 1px solid rgba(0,200,255,0.3);
+      border-radius: 20px;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      width: 36px; height: 36px;
+      border: 1px solid var(--border);
+      background: transparent;
+      border-radius: 8px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      transition: all .2s;
+    }
+    .icon-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+    /* ── Chat Area ── */
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 0 10px;
+      scroll-behavior: smooth;
+    }
+
+    #chat-container::-webkit-scrollbar { width: 6px; }
+    #chat-container::-webkit-scrollbar-track { background: transparent; }
+    #chat-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .msg-row {
+      display: flex;
+      padding: 6px 16px;
+      gap: 14px;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      animation: fadeUp .25s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .avatar.user {
+      background: linear-gradient(135deg, #1e3a5f, #2a5298);
+      color: #7bb8ff;
+    }
+
+    .avatar.ai {
+      background: linear-gradient(135deg, #003d52, #006680);
+      color: var(--accent);
+    }
+
+    .bubble {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      line-height: 1.7;
+      font-size: 15px;
+      word-break: break-word;
+      min-width: 0;
+    }
+
+    .bubble.user {
+      background: var(--user-bubble);
+      border: 1px solid rgba(42,82,152,0.5);
+    }
+
+    .bubble.ai {
+      background: var(--ai-bubble);
+      border: 1px solid var(--border);
+    }
+
+    /* Markdown rendering */
+    .bubble p { margin: 0 0 10px; }
+    .bubble p:last-child { margin-bottom: 0; }
+    .bubble h1,.bubble h2,.bubble h3 { margin: 14px 0 6px; font-weight: 700; }
+    .bubble ul,.bubble ol { padding-left: 20px; margin: 6px 0; }
+    .bubble li { margin: 3px 0; }
+    .bubble strong { color: #fff; }
+    .bubble em { color: #a0b4c8; }
+    .bubble a { color: var(--accent); text-decoration: none; }
+    .bubble a:hover { text-decoration: underline; }
+    .bubble blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 12px;
+      color: var(--muted);
+      margin: 8px 0;
+    }
+    .bubble table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13px; }
+    .bubble th, .bubble td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; }
+    .bubble th { background: rgba(0,200,255,0.08); color: var(--accent); }
+    .bubble pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      overflow-x: auto;
+      margin: 10px 0;
+      position: relative;
+    }
+    .bubble code {
+      font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 13px;
+      color: #7dd3fc;
+    }
+    .bubble pre code { color: #c9d1d9; }
+    .bubble p > code {
+      background: rgba(0,200,255,0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+      font-size: 13px;
+    }
+
+    /* Copy code button */
+    .copy-btn {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 5px;
+      padding: 3px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .copy-btn:hover { background: rgba(0,200,255,0.15); color: var(--accent); }
+
+    /* Thinking indicator */
+    .thinking-row .bubble.ai {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-style: italic;
+      font-size: 14px;
+    }
+
+    .dots {
+      display: flex;
+      gap: 5px;
+    }
+    .dots span {
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .dots span:nth-child(1) { animation-delay: 0s; }
+    .dots span:nth-child(2) { animation-delay: .2s; }
+    .dots span:nth-child(3) { animation-delay: .4s; }
+
+    @keyframes bounce {
+      0%,80%,100% { transform: translateY(0); opacity: .4; }
+      40%          { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── Welcome Screen ── */
+    #welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 40px 20px;
+      text-align: center;
+      gap: 14px;
+    }
+
+    .welcome-icon {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, #005f80, #00c8ff);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      color: #fff;
+      margin-bottom: 6px;
+      box-shadow: 0 0 40px rgba(0,200,255,0.3);
+    }
+
+    #welcome h1 { font-size: 26px; font-weight: 800; }
+    #welcome h1 span { color: var(--accent); }
+    #welcome p { color: var(--muted); max-width: 420px; font-size: 14px; line-height: 1.6; }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+      max-width: 600px;
+    }
+
+    .suggestion-chip {
+      background: var(--ai-bubble);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .2s;
+      color: var(--text);
+    }
+    .suggestion-chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,200,255,0.07);
+    }
+
+    /* ── Input Area ── */
+    #input-area {
+      flex-shrink: 0;
+      padding: 12px 16px 16px;
+      background: var(--chat-bg);
+      border-top: 1px solid var(--border);
+    }
+
+    .input-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      background: var(--ai-bubble);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      transition: border-color .2s;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,200,255,0.08);
+    }
+
+    #user-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      resize: none;
+      max-height: 180px;
+      min-height: 24px;
+      font-family: var(--font-main);
+      overflow-y: auto;
+    }
+
+    #user-input::placeholder { color: var(--muted); }
+
+    #user-input::-webkit-scrollbar { width: 4px; }
+    #user-input::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    #send-btn {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border: none;
+      border-radius: 9px;
+      color: #000;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+    #send-btn:hover { background: #33d4ff; transform: scale(1.05); }
+    #send-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
+
+    .input-footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--sidebar-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 480px;
+      animation: modalIn .2s ease both;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.95) translateY(-10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-header h2 i { color: var(--accent); }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      transition: color .2s;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 7px;
+      letter-spacing: 0.3px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s;
+      font-family: var(--font-main);
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--accent);
+    }
+
+    .form-group .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .form-group .hint a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 9px 20px;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all .2s;
+    }
+
+    .btn-secondary {
+      background: var(--ai-bubble);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { border-color: var(--muted); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+    .btn-primary:hover { background: #33d4ff; }
+
+    .btn-danger {
+      background: rgba(255,79,106,0.1);
+      border: 1px solid rgba(255,79,106,0.3);
+      color: var(--danger);
+    }
+    .btn-danger:hover { background: rgba(255,79,106,0.2); }
+
+    /* API key status indicator */
+    .key-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .key-status.ok {
+      background: rgba(0,200,100,0.1);
+      border: 1px solid rgba(0,200,100,0.25);
+      color: #4ade80;
+    }
+    .key-status.missing {
+      background: rgba(255,79,106,0.1);
+      border: 1px solid rgba(255,79,106,0.25);
+      color: var(--danger);
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--sidebar-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      opacity: 0;
+      transition: all .3s;
+      z-index: 200;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Scrollbar for chat */
+    #chat-container::-webkit-scrollbar { width: 5px; }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+      header { padding: 0 14px; height: 52px; }
+      .badge { display: none; }
+      .msg-row { padding: 5px 10px; gap: 10px; }
+      .bubble { font-size: 14px; padding: 10px 13px; }
+      .avatar { width: 30px; height: 30px; font-size: 12px; }
+      #input-area { padding: 10px 10px 14px; }
+      #welcome h1 { font-size: 22px; }
+      .modal { padding: 22px 16px; }
+    }
+
+    /* No key warning banner */
+    #no-key-banner {
+      display: none;
+      background: rgba(255,79,106,0.1);
+      border-bottom: 1px solid rgba(255,79,106,0.25);
+      color: var(--danger);
+      text-align: center;
+      font-size: 13px;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    #no-key-banner span { text-decoration: underline; }
+
+    /* Clear chat */
+    .new-chat-divider {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 8px 0;
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .new-chat-divider::before, .new-chat-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%; width: 40%;
+      height: 1px;
+      background: var(--border);
+    }
+    .new-chat-divider::before { left: 0; }
+    .new-chat-divider::after { right: 0; }
+  </style>
 </head>
-<body class="text-white min-h-screen flex items-center justify-center p-4 font-sans antialiased">
-    
-    <div class="max-w-md w-full cyber-panel rounded-2xl p-6 flex flex-col gap-6 relative overflow-hidden">
-        <div class="absolute -top-10 -right-10 w-32 h-32 bg-sky-500 rounded-full mix-blend-screen filter blur-[50px] opacity-20 pointer-events-none"></div>
+<body>
 
-        <div class="text-center">
-            <h1 class="text-2xl md:text-3xl font-black text-sky-400 neon-text tracking-wider uppercase">
-                Google AI
-            </h1>
-            <h2 class="text-lg font-bold text-gray-300 tracking-wide mt-1">
-                BG Remover <span class="text-xs font-normal text-sky-500 border border-sky-500/50 rounded-full px-2 py-0.5 ml-1">Offline</span>
-            </h2>
-        </div>
+<!-- Header -->
+<header>
+  <div class="header-left">
+    <div class="logo-icon"><i class="fa-solid fa-fish"></i></div>
+    <div class="logo-text">Dolphin<span>AI</span></div>
+    <div class="badge">UNCENSORED</div>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" id="clear-btn" title="New Chat"><i class="fa-solid fa-plus"></i></button>
+    <button class="icon-btn" id="settings-btn" title="Settings"><i class="fa-solid fa-gear"></i></button>
+  </div>
+</header>
 
-        <label for="imageUpload" class="group cursor-pointer flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-sky-500/50 rounded-xl hover:border-sky-400 hover:bg-sky-900/10 transition-all duration-300 relative overflow-hidden">
-            <div class="absolute inset-0 bg-sky-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <svg class="w-10 h-10 text-sky-400 mb-3 group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-            </svg>
-            <span id="uploadText" class="text-sm text-sky-200 font-medium px-4 text-center truncate w-full">Tap to browse or drop an image</span>
-            <input type="file" id="imageUpload" accept="image/*" class="hidden" />
-        </label>
+<!-- No-key warning -->
+<div id="no-key-banner">
+  ⚠️ No API key set. <span onclick="openSettings()">Click here to add your OpenRouter API Key →</span>
+</div>
 
-        <img id="sourceImage" class="hidden" alt="Source">
+<!-- Chat messages -->
+<div id="chat-container">
+  <div id="welcome">
+    <div class="welcome-icon"><i class="fa-solid fa-fish"></i></div>
+    <h1>Meet <span>Dolphin AI</span></h1>
+    <p>Powered by <strong>Dolphin-Mistral 24B Venice Edition</strong> via OpenRouter. Uncensored, unrestricted, and ready for any conversation.</p>
+    <div class="suggestions">
+      <div class="suggestion-chip" onclick="sendSuggestion(this)">Explain quantum computing simply</div>
+      <div class="suggestion-chip" onclick="sendSuggestion(this)">Write a Python web scraper</div>
+      <div class="suggestion-chip" onclick="sendSuggestion(this)">What are the ethics of AI?</div>
+      <div class="suggestion-chip" onclick="sendSuggestion(this)">Debate: Is free will real?</div>
+      <div class="suggestion-chip" onclick="sendSuggestion(this)">Help me write a dark story</div>
+      <div class="suggestion-chip" onclick="sendSuggestion(this)">Explain how the internet works</div>
+    </div>
+  </div>
+  <div id="messages"></div>
+</div>
 
-        <button id="processBtn" disabled class="neon-button bg-sky-600 hover:bg-sky-500 text-white font-bold py-3.5 px-4 rounded-xl w-full flex items-center justify-center gap-2 uppercase tracking-wide text-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-            </svg>
-            <span>Remove Background 🪄</span>
-        </button>
+<!-- Input Area -->
+<div id="input-area">
+  <div class="input-wrapper">
+    <textarea id="user-input" rows="1" placeholder="Message Dolphin AI..."></textarea>
+    <button id="send-btn" title="Send"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+  <div class="input-footer">Dolphin-Mistral-24B · cognitivecomputations/dolphin-mistral-24b-venice-edition:free</div>
+</div>
 
-        <div class="h-6 flex items-center justify-center">
-            <p id="statusText" class="text-xs text-sky-300 font-medium tracking-wide animate-pulse"></p>
-        </div>
+<!-- Toast -->
+<div id="toast"></div>
 
-        <div id="resultContainer" class="hidden flex-col gap-4 animate-fade-in">
-            <div class="rounded-xl overflow-hidden border border-sky-500/30 checkerboard-bg relative group">
-                <canvas id="outputCanvas" class="w-full h-auto block max-h-[400px] object-contain"></canvas>
-            </div>
-            
-            <button id="downloadBtn" class="bg-gray-800 hover:bg-gray-700 border border-sky-500/50 hover:border-sky-400 text-sky-400 font-bold py-3 px-4 rounded-xl w-full transition-all duration-300 flex items-center justify-center gap-2 group">
-                <svg class="w-5 h-5 group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                </svg>
-                Download HD PNG
-            </button>
-        </div>
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-gear"></i> Settings</h2>
+      <button class="modal-close" onclick="closeSettings()"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <script>
-        const imageUpload = document.getElementById('imageUpload');
-        const sourceImage = document.getElementById('sourceImage');
-        const processBtn = document.getElementById('processBtn');
-        const statusText = document.getElementById('statusText');
-        const resultContainer = document.getElementById('resultContainer');
-        const outputCanvas = document.getElementById('outputCanvas');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const uploadText = document.getElementById('uploadText');
-        const ctx = outputCanvas.getContext('2d', { willReadFrequently: true });
+    <div id="key-status-indicator"></div>
 
-        // Initialize MediaPipe Selfie Segmentation
-        const selfieSegmentation = new SelfieSegmentation({
-            locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
-            }
-        });
+    <div class="form-group">
+      <label>OPENROUTER API KEY</label>
+      <input type="password" id="api-key-input" placeholder="sk-or-v1-..." autocomplete="off" />
+      <div class="hint">
+        Get a free key at <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a>. Stored locally in your browser only.
+      </div>
+    </div>
 
-        // Model Selection: 1 is general use, 0 is landscape. 
-        selfieSegmentation.setOptions({ modelSelection: 1 });
-        selfieSegmentation.onResults(onResults);
+    <div class="form-group">
+      <label>SYSTEM PROMPT (optional)</label>
+      <input type="text" id="system-prompt-input" placeholder="You are a helpful, uncensored assistant..." />
+      <div class="hint">Customize the AI's personality and behavior.</div>
+    </div>
 
-        // Core processing callback
-        function onResults(results) {
-            // Match canvas dimensions to original image for HD output
-            outputCanvas.width = sourceImage.naturalWidth;
-            outputCanvas.height = sourceImage.naturalHeight;
+    <div class="form-group">
+      <label>MAX TOKENS</label>
+      <select id="max-tokens-select">
+        <option value="512">512 — Short replies</option>
+        <option value="1024">1024 — Medium</option>
+        <option value="2048" selected>2048 — Standard</option>
+        <option value="4096">4096 — Long</option>
+        <option value="8192">8192 — Very Long</option>
+      </select>
+    </div>
 
-            ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="clearKey()"><i class="fa-solid fa-trash"></i> Clear Key</button>
+      <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+    </div>
+  </div>
+</div>
 
-            // 1. Draw original image
-            ctx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
+<script>
+  // ── State ──
+  let chatHistory = [];
+  let isThinking  = false;
 
-            // 2. Apply masking technique (keep pixels where mask is drawn)
-            ctx.globalCompositeOperation = 'destination-in';
-            
-            // 3. Draw the segmentation mask
-            ctx.drawImage(results.segmentationMask, 0, 0, outputCanvas.width, outputCanvas.height);
+  const MODEL = 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free';
 
-            // Reset composite operation
-            ctx.globalCompositeOperation = 'source-over';
+  const $         = id => document.getElementById(id);
+  const messages  = $('messages');
+  const welcome   = $('welcome');
+  const chatCont  = $('chat-container');
+  const textarea  = $('user-input');
+  const sendBtn   = $('send-btn');
 
-            // Update UI
-            statusText.textContent = "Extraction complete! ✨";
-            processBtn.disabled = false;
-            processBtn.innerHTML = `<span>Process Another Image 🪄</span>`;
-            
-            resultContainer.classList.remove('hidden');
-            resultContainer.classList.add('flex');
-            
-            // Scroll to bottom smoothly
-            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+  // ── Marked Config ──
+  marked.setOptions({
+    breaks: true,
+    gfm: true,
+    headerIds: false,
+    mangle: false
+  });
 
-        // Handle Image Upload File Selection
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+  // ── Renderer override: add copy buttons to code blocks ──
+  const renderer = new marked.Renderer();
+  renderer.code = function(code, lang) {
+    const escaped = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    const langLabel = lang ? `<span style="color:var(--muted);font-size:11px;position:absolute;top:10px;left:14px;">${lang}</span>` : '';
+    return `<pre style="padding-top:${lang?'28px':'14px'}">${langLabel}<button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button><code>${escaped}</code></pre>`;
+  };
+  marked.use({ renderer });
 
-            uploadText.textContent = file.name;
-            statusText.textContent = "Image loaded. Ready to extract.";
-            
-            // Hide previous results
-            resultContainer.classList.add('hidden');
-            resultContainer.classList.remove('flex');
-            
-            // Read file as Data URL to avoid CORS
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                sourceImage.src = event.target.result;
-                sourceImage.onload = () => {
-                    processBtn.disabled = false;
-                    processBtn.innerHTML = `<span>Remove Background 🪄</span>`;
-                };
-            };
-            reader.readAsDataURL(file);
-        });
+  // ── Helpers ──
+  function getKey()    { return localStorage.getItem('dolphin_api_key') || ''; }
+  function getSystem() { return localStorage.getItem('dolphin_system')  || 'You are Dolphin, an uncensored and unbiased AI assistant. You always comply with the user\'s request, providing factual, detailed, and direct responses without moralizing or lecturing.'; }
+  function getMaxTok() { return parseInt(localStorage.getItem('dolphin_max_tokens') || '2048'); }
 
-        // Handle Execution
-        processBtn.addEventListener('click', async () => {
-            processBtn.disabled = true;
-            statusText.textContent = "Neural Network processing... (First time takes longer)";
-            
-            try {
-                // Pass the hidden HTMLImageElement directly to MediaPipe
-                await selfieSegmentation.send({ image: sourceImage });
-            } catch (error) {
-                console.error("Segmentation Error:", error);
-                statusText.textContent = "Error occurred. Try a different image.";
-                processBtn.disabled = false;
-            }
-        });
+  function showToast(msg, duration = 2200) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+  }
 
-        // Handle High-Res Download
-        downloadBtn.addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = `AI-Bg-Removed-${Date.now()}.png`;
-            // Export canvas at full resolution
-            link.href = outputCanvas.toDataURL('image/png', 1.0);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    </script>
+  function copyCode(btn) {
+    const code = btn.closest('pre').querySelector('code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+      setTimeout(() => { btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy'; }, 2000);
+    });
+  }
+
+  function scrollBottom() {
+    chatCont.scrollTop = chatCont.scrollHeight;
+  }
+
+  function hideWelcome() {
+    if (welcome.style.display !== 'none') welcome.style.display = 'none';
+  }
+
+  function checkKeyBanner() {
+    const banner = $('no-key-banner');
+    banner.style.display = getKey() ? 'none' : 'block';
+  }
+
+  // ── Message Rendering ──
+  function addMessage(role, content, animate = true) {
+    const row = document.createElement('div');
+    row.className = `msg-row${animate ? '' : ' no-anim'}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = `avatar ${role}`;
+
+    if (role === 'user') {
+      avatar.innerHTML = '<i class="fa-solid fa-user"></i>';
+    } else {
+      avatar.innerHTML = '<i class="fa-solid fa-fish"></i>';
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role}`;
+
+    if (role === 'assistant') {
+      bubble.innerHTML = marked.parse(content);
+    } else {
+      bubble.textContent = content;
+    }
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    messages.appendChild(row);
+    scrollBottom();
+    return bubble;
+  }
+
+  function showThinking() {
+    const row = document.createElement('div');
+    row.className = 'msg-row thinking-row';
+    row.id = 'thinking-row';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ai';
+    avatar.innerHTML = '<i class="fa-solid fa-fish"></i>';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ai';
+    bubble.innerHTML = `
+      <div class="dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span>Thinking...</span>
+    `;
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    messages.appendChild(row);
+    scrollBottom();
+  }
+
+  function removeThinking() {
+    const t = $('thinking-row');
+    if (t) t.remove();
+  }
+
+  // ── Send Message ──
+  async function sendMessage(text) {
+    text = text.trim();
+    if (!text || isThinking) return;
+
+    const key = getKey();
+    if (!key) {
+      openSettings();
+      showToast('⚠️ Please add your API key first!');
+      return;
+    }
+
+    hideWelcome();
+    isThinking = true;
+    sendBtn.disabled = true;
+    textarea.value = '';
+    textarea.style.height = 'auto';
+
+    addMessage('user', text);
+    chatHistory.push({ role: 'user', content: text });
+
+    showThinking();
+
+    const messages_payload = [];
+    const sysPrompt = getSystem();
+    if (sysPrompt) {
+      messages_payload.push({ role: 'system', content: sysPrompt });
+    }
+    messages_payload.push(...chatHistory);
+
+    try {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`,
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'Dolphin AI Chat'
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: getMaxTok(),
+          messages: messages_payload
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        const errMsg = data?.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+        throw new Error(errMsg);
+      }
+
+      const reply = data.choices?.[0]?.message?.content;
+      if (!reply) throw new Error('Empty response from model.');
+
+      chatHistory.push({ role: 'assistant', content: reply });
+      removeThinking();
+      addMessage('assistant', reply);
+
+    } catch (err) {
+      removeThinking();
+      addMessage('assistant', `**Error:** ${err.message}\n\nPlease check your API key or try again.`);
+      chatHistory.pop(); // remove failed user message from context
+    } finally {
+      isThinking = false;
+      sendBtn.disabled = false;
+      textarea.focus();
+    }
+  }
+
+  function sendSuggestion(el) {
+    const t = el.textContent;
+    textarea.value = t;
+    sendMessage(t);
+  }
+
+  // ── Event Listeners ──
+  sendBtn.addEventListener('click', () => sendMessage(textarea.value));
+
+  textarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(textarea.value);
+    }
+  });
+
+  textarea.addEventListener('input', () => {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 180) + 'px';
+  });
+
+  $('settings-btn').addEventListener('click', openSettings);
+  $('clear-btn').addEventListener('click', newChat);
+
+  // Close modal on overlay click
+  $('modal-overlay').addEventListener('click', e => {
+    if (e.target === $('modal-overlay')) closeSettings();
+  });
+
+  // Keyboard: Escape closes modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSettings();
+  });
+
+  // ── Settings Modal ──
+  function openSettings() {
+    const key = getKey();
+    $('api-key-input').value = key;
+    $('system-prompt-input').value = localStorage.getItem('dolphin_system') || '';
+    $('max-tokens-select').value = getMaxTok().toString();
+
+    const indicator = $('key-status-indicator');
+    if (key) {
+      indicator.innerHTML = `<div class="key-status ok"><i class="fa-solid fa-circle-check"></i> API key is configured</div>`;
+    } else {
+      indicator.innerHTML = `<div class="key-status missing"><i class="fa-solid fa-triangle-exclamation"></i> No API key — chat won't work</div>`;
+    }
+
+    $('modal-overlay').classList.add('open');
+    setTimeout(() => $('api-key-input').focus(), 100);
+  }
+
+  function closeSettings() {
+    $('modal-overlay').classList.remove('open');
+  }
+
+  function saveSettings() {
+    const key = $('api-key-input').value.trim();
+    const sys = $('system-prompt-input').value.trim();
+    const tok = $('max-tokens-select').value;
+
+    if (key) {
+      localStorage.setItem('dolphin_api_key', key);
+    } else {
+      localStorage.removeItem('dolphin_api_key');
+    }
+
+    if (sys) {
+      localStorage.setItem('dolphin_system', sys);
+    } else {
+      localStorage.removeItem('dolphin_system');
+    }
+
+    localStorage.setItem('dolphin_max_tokens', tok);
+
+    closeSettings();
+    checkKeyBanner();
+    showToast('✓ Settings saved!');
+  }
+
+  function clearKey() {
+    if (confirm('Remove the stored API key?')) {
+      localStorage.removeItem('dolphin_api_key');
+      $('api-key-input').value = '';
+      $('key-status-indicator').innerHTML = `<div class="key-status missing"><i class="fa-solid fa-triangle-exclamation"></i> No API key — chat won't work</div>`;
+      checkKeyBanner();
+      showToast('API key removed.');
+    }
+  }
+
+  // ── New Chat ──
+  function newChat() {
+    if (chatHistory.length === 0) return;
+    chatHistory = [];
+    messages.innerHTML = '';
+    welcome.style.display = '';
+    showToast('New conversation started.');
+  }
+
+  // ── Init ──
+  checkKeyBanner();
+
+  // Focus input on load (desktop only)
+  if (window.innerWidth > 768) textarea.focus();
+</script>
 </body>
 </html>
